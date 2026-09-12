@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer App</title>
-  <!-- Supabase JS Client Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; background: #f4f4f9; }
@@ -23,15 +22,13 @@
   </div>
 
   <script>
-    // ⚠️ আপনার Supabase URL এবং Anon Key বসান
-    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const SUPABASE_URL = 'https://koymnainhkuwfkptqdgt.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_N5X02gPbt6FiD2MBaIuVMw_5V15eXXA';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function loadProducts() {
       const grid = document.getElementById('productGrid');
       
-      // Database থেকে ডেটা আনা
       const { data: products, error } = await supabase
         .from('products')
         .select('*')
@@ -55,7 +52,6 @@
       `).join('');
     }
 
-    // পেজ লোড হলে অটোমেটিক কল হবে
     loadProducts();
   </script>
 </body>
