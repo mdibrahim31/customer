@@ -2,25 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Connection Test</title>
+    <title>Telegram Bot Test</title>
 </head>
 <body>
-    <h2 id="result">Connecting to backend...</h2>
+    <input type="text" id="msgInput" placeholder="Hello likhun..." />
+    <button onclick="sendMessage()">Bot-e Pathao</button>
+    <p id="status"></p>
 
     <script>
-        // Render-er live URL-ti ekhane boshan
-        const BACKEND_URL = "https://hello-world-lllw.onrender.com";
+        const BACKEND_URL = "https://your-backend.onrender.com";
 
-        fetch(BACKEND_URL)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("result").innerText = data.message;
+        function sendMessage() {
+            const text = document.getElementById("msgInput").value;
+
+            fetch(`${BACKEND_URL}/send-to-bot`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: text })
             })
-            .catch(error => {
-                console.error("Error:", error);
-                document.getElementById("result").innerText = "Connection Failed!";
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("status").innerText = data.message;
+            })
+            .catch(err => {
+                document.getElementById("status").innerText = "Error holo!";
             });
+        }
     </script>
 </body>
 </html>
+
 
