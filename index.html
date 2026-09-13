@@ -2,34 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Telegram Bot Test</title>
+    <title>Live Menu from Supabase</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        ul { list-style-type: square; }
+        li { margin-bottom: 8px; font-size: 18px; }
+    </style>
 </head>
 <body>
-    <input type="text" id="msgInput" placeholder="Hello likhun..." />
-    <button onclick="sendMessage()">Bot-e Pathao</button>
-    <p id="status"></p>
+    <h2>Live Restaurant/Shop Menu (via Telegram & Supabase)</h2>
+    <ul id="menuList">Loading menu...</ul>
 
     <script>
-        const BACKEND_URL = "https://hello-world-lllw.onrender.com";
+        const BACKEND_URL = "https://your-backend-name.onrender.com";
 
-        function sendMessage() {
-            const text = document.getElementById("msgInput").value;
+        function fetchMenu() {
+            fetch(`${BACKEND_URL}/get-menu`)
+                .then(res => res.json())
+                .then(data => {
+                    const listElement = document.getElementById("menuList");
+                    listElement.innerHTML = "";
 
-            fetch(`${BACKEND_URL}/send-to-bot`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: text })
-            })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById("status").innerText = data.message;
-            })
-            .catch(err => {
-                document.getElementById("status").innerText = "Error holo!";
-            });
+                    if (data.success && data.menu.length > 0) {
+                        data.menu.forEach(item => {
+                            const li = document.createElement("li");
+                            li.innerText = item.item_name;
+                            listElement.appendChild(li);
+                        });
+                    } else {
+                        listElement.innerHTML = "<li>Kono menu nei ekhono. Bot-e message pathan!</li>";
+                    }
+                })
+                .catch(err => {
+                    console.error("Error:", err);
+                    document.getElementById("menuList").innerHTML = "<li>Menu load korte error hoyeche!</li>";
+                });
         }
+
+        fetchMenu();
     </script>
 </body>
 </html>
-
-
