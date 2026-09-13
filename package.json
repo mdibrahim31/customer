@@ -1,5 +1,5 @@
 {
-  "name": "telegram-bot-backend",
+  "name": "telegram-bot-supabase-backend",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
@@ -8,6 +8,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "node-telegram-bot-api": "^0.66.0"
+    "node-telegram-bot-api": "^0.66.0",
+    "@supabase/supabase-js": "^2.39.8"
   }
 }
