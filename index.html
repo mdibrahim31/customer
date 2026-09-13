@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Connection Test</title>
+</head>
+<body>
+    <h2 id="result">Connecting to backend...</h2>
+
+    <script>
+        // Render-er live URL-ti ekhane boshan
+        const BACKEND_URL = "https://my-backend-test.onrender.com";
+
+        fetch(BACKEND_URL)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerText = data.message;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("result").innerText = "Connection Failed!";
+            });
+    </script>
+</body>
+</html>
+
