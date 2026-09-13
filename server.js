@@ -14,7 +14,7 @@ const DATABASE_URL = process.env.DATABASE_URL;
 const pool = new Pool({
   connectionString: DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false // Render PostgreSQL-er jonno SSL connection lagbe
+    rejectUnauthorized: false
   }
 });
 
@@ -42,6 +42,12 @@ bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const menuText = msg.text;
 
+  // Jodi message-e text na thake ba blank hoy
+  if (!menuText) {
+    bot.sendMessage(chatId, "Doy kore kono text ba menu item likhe pathan.");
+    return;
+  }
+
   if (menuText === '/start') {
     bot.sendMessage(chatId, "Welcome! Menu item ekhane pathan.");
     return;
@@ -55,7 +61,7 @@ bot.on('message', async (msg) => {
     bot.sendMessage(chatId, `Saved to Database: "${menuText}"`);
   } catch (err) {
     console.error("Insert error:", err.message);
-    bot.sendMessage(chatId, "Database-e save korte somoshsha hoyeche.");
+    bot.sendMessage(chatId, `Database error: ${err.message}`);
   }
 });
 
