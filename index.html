@@ -3,161 +3,310 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supabase Image Gallery</title>
-    <!-- Google Fonts & Supabase JS SDK -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>FoodHub - Discover & Order Delicious Food</title>
+    <!-- Google Fonts & Tailwind CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+        body { font-family: 'Poppins', sans-serif; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        body {
-            background-color: #f8fafc;
-            color: #334155;
-            padding: 40px 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            color: #0f172a;
-            margin-bottom: 10px;
-        }
-
-        header p {
-            color: #64748b;
-            font-size: 1.1rem;
-        }
-
-        /* Grid Layout for Cards */
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .card {
-            background: #ffffff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        .card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .card-content {
-            padding: 20px;
-        }
-
-        .card-content h3 {
-            font-size: 1.2rem;
-            color: #1e293b;
-            margin-bottom: 8px;
-        }
-
-        .card-content p {
-            font-size: 0.95rem;
-            color: #64748b;
-        }
-
-        .loading, .error {
-            text-align: center;
-            grid-column: 1 / -1;
-            font-size: 1.2rem;
-            color: #64748b;
-            padding: 40px;
+        .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        .hero-bg {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover; background-position: center;
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between">
 
-    <div class="container">
-        <header>
-            <h1>My Supabase Gallery</h1>
-            <p>Images and data loaded directly from Supabase Database</p>
-        </header>
-
-        <div class="gallery-grid" id="galleryContainer">
-            <div class="loading">Loading data from Supabase...</div>
+    <!-- Welcome Modal Animation -->
+    <div id="welcomeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm transition-opacity duration-500">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl animate-fade-in">
+            <div class="w-16 h-16 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">🍔</div>
+            <h2 class="text-2xl font-bold mb-2">Welcome to FoodHub!</h2>
+            <p class="text-gray-600 mb-6">Discover the best restaurants and delicious foods around you with instant ordering.</p>
+            <button onclick="closeWelcomeModal()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-orange-500/30">Explore Foods</button>
         </div>
     </div>
 
+    <!-- Navigation Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-orange-500 flex items-center gap-2">
+                <i data-lucide="utensils"></i> FoodHub
+            </h1>
+            <div class="flex items-center gap-4">
+                <button onclick="toggleCart()" class="relative bg-orange-50 hover:bg-orange-100 text-orange-600 p-2.5 rounded-xl transition flex items-center gap-2 font-medium">
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    <span class="hidden sm:inline">Cart</span>
+                    <span id="cartCount" class="bg-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <!-- Hero Section -->
+        <section class="hero-bg text-white py-20 px-4 text-center">
+            <div class="max-w-3xl mx-auto animate-fade-in">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">Delicious Food, Delivered Fast</h2>
+                <p class="text-lg text-gray-200 mb-8">Explore top-rated restaurants and categories right at your fingertips.</p>
+                <!-- Search & Filters -->
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <div class="relative flex-grow max-w-md">
+                        <i data-lucide="search" class="absolute left-4 top-3.5 text-gray-400 w-5 h-5"></i>
+                        <input type="text" id="searchInput" oninput="filterData()" placeholder="Search restaurants or food items..." class="w-full pl-12 pr-4 py-3 rounded-xl text-gray-800 bg-white focus:outline-none shadow-md">
+                    </div>
+                    <select id="categoryFilter" onchange="filterData()" class="px-4 py-3 rounded-xl text-gray-800 bg-white focus:outline-none shadow-md font-medium">
+                        <option value="all">All Categories</option>
+                        <option value="Fast Food">Fast Food</option>
+                        <option value="Italian">Italian</option>
+                        <option value="Desi">Desi / Local</option>
+                        <option value="Dessert">Dessert</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Restaurants List Section -->
+        <section class="max-w-7xl mx-auto px-4 py-12">
+            <h3 class="text-2xl font-bold mb-6 text-gray-800">Featured Restaurants</h3>
+            <div id="restaurantContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically loaded via JavaScript -->
+            </div>
+        </section>
+
+        <!-- Menu View Section (Hidden by default) -->
+        <section id="menuSection" class="max-w-7xl mx-auto px-4 py-12 hidden">
+            <button onclick="backToRestaurants()" class="mb-6 flex items-center gap-2 text-orange-500 font-semibold hover:underline">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i> Back to Restaurants
+            </button>
+            <div id="restaurantHeader" class="bg-white p-6 rounded-2xl shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <!-- Dynamic Restaurant Info -->
+            </div>
+            <h4 class="text-xl font-bold mb-6">Menu Items</h4>
+            <div id="menuContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Menu Items -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Slide-over Cart Drawer -->
+    <div id="cartDrawer" class="fixed inset-0 z-50 bg-black/50 hidden flex justify-end">
+        <div class="bg-white w-full max-w-md h-full p-6 flex flex-col justify-between shadow-2xl animate-fade-in">
+            <div>
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold flex items-center gap-2"><i data-lucide="shopping-cart"></i> Your Cart</h3>
+                    <button onclick="toggleCart()" class="text-gray-500 hover:text-gray-700"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+                <div id="cartItems" class="space-y-4 overflow-y-auto max-h-[50vh]">
+                    <!-- Cart items -->
+                </div>
+            </div>
+            <div class="border-t pt-4">
+                <div class="flex justify-between font-bold text-lg mb-4">
+                    <span>Total:</span>
+                    <span id="cartTotal">$0.00</span>
+                </div>
+                <button onclick="checkout()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-orange-500/30">Place Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t py-6 text-center text-gray-500 text-sm">
+        <p>&copy; 2026 FoodHub. All rights reserved.</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
     <script>
-        // --- SUPABASE CONFIGURATION ---
-        // Apnar Supabase project er credentials ekhane boshan:
-        const SUPABASE_URL = 'https://kdqyompkfmnocpihfzdj.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_e1XP69z_JHDSQ3hSYNeVJw_l6n7l8EA';
+        lucide.createIcons();
 
-        // Supabase client initialize kora
-        const { createClient } = supabase;
-        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        async function fetchImagesFromSupabase() {
-            const container = document.getElementById('galleryContainer');
-
-            try {
-                // 'posts' ba apnar table-er name ekhane dite hobe
-                const { data, error } = await _supabase
-                    .from('posts') 
-                    .select('*');
-
-                if (error) {
-                    throw error;
-                }
-
-                if (!data || data.length === 0) {
-                    container.innerHTML = `<div class="loading">No data found in database!</div>`;
-                    return;
-                }
-
-                // Data paowar por HTML generate kora
-                container.innerHTML = '';
-                data.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    
-                    card.innerHTML = `
-                        <img src="${item.image_url}" alt="${item.title || 'Image'}">
-                        <div class="card-content">
-                            <h3>${item.title || 'Untitled'}</h3>
-                            <p>${item.description || ''}</p>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-
-            } catch (err) {
-                console.error('Error fetching data:', err);
-                container.innerHTML = `<div class="error">Failed to load data. Please check Supabase credentials.</div>`;
+        // Dummy Data for Restaurants & Menus (Later can be fetched from Supabase)
+        const restaurants = [
+            {
+                id: 1,
+                name: "Burger & Co.",
+                category: "Fast Food",
+                rating: 4.8,
+                image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80",
+                menu: [
+                    { id: 101, name: "Cheeseburger Deluxe", price: 8.99, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80" },
+                    { id: 102, name: "Crispy Chicken Burger", price: 7.49, image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=400&q=80" },
+                    { id: 103, name: "French Fries", price: 3.00, image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=400&q=80" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Little Italy Pizzeria",
+                category: "Italian",
+                rating: 4.9,
+                image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                menu: [
+                    { id: 201, name: "Margherita Pizza", price: 12.99, image: "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?auto=format&fit=crop&w=400&q=80" },
+                    { id: 202, name: "Pepperoni Feast", price: 15.49, image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=400&q=80" }
+                ]
+            },
+            {
+                id: 3,
+                name: "Spicy Dhaka Biryani",
+                category: "Desi",
+                rating: 4.7,
+                image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=600&q=80",
+                menu: [
+                    { id: 301, name: "Mutton Kacchi Biryani", price: 9.50, image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=400&q=80" },
+                    { id: 302, name: "Chicken Roast & Polao", price: 7.99, image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=400&q=80" }
+                ]
             }
+        ];
+
+        let cart = [];
+
+        function closeWelcomeModal() {
+            document.getElementById('welcomeModal').classList.add('hidden');
         }
 
-        // Page load holei function call hobe
-        fetchImagesFromSupabase();
+        function renderRestaurants(data) {
+            const container = document.getElementById('restaurantContainer');
+            container.innerHTML = '';
+            if(data.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found.</p>`;
+                return;
+            }
+            data.forEach(res => {
+                container.innerHTML += `
+                    <div onclick="openRestaurant(${res.id})" class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition cursor-pointer group">
+                        <div class="h-48 overflow-hidden">
+                            <img src="${res.image}" alt="${res.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        </div>
+                        <div class="p-5">
+                            <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">${res.category}</span>
+                            <h4 class="text-lg font-bold mt-2 text-gray-800">${res.name}</h4>
+                            <div class="flex items-center gap-1 text-yellow-500 mt-2 text-sm font-semibold">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i> ${res.rating}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function filterData() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+
+            const filtered = restaurants.filter(res => {
+                const matchesCategory = category === 'all' || res.category === category;
+                const matchesSearch = res.name.toLowerCase().includes(query) || res.menu.some(m => m.name.toLowerCase().includes(query));
+                return matchesCategory && matchesSearch;
+            });
+            renderRestaurants(filtered);
+        }
+
+        function openRestaurant(id) {
+            const res = restaurants.find(r => r.id === id);
+            document.querySelector('main section.hero-bg').classList.add('hidden');
+            document.getElementById('restaurantContainer').parentElement.classList.add('hidden');
+            
+            const menuSection = document.getElementById('menuSection');
+            menuSection.classList.remove('hidden');
+
+            document.getElementById('restaurantHeader').innerHTML = `
+                <div class="flex items-center gap-4">
+                    <img src="${res.image}" class="w-20 h-20 rounded-xl object-cover">
+                    <div>
+                        <h3 class="text-2xl font-bold">${res.name}</h3>
+                        <p class="text-gray-500">${res.category} • ⭐ ${res.rating}</p>
+                    </div>
+                </div>
+            `;
+
+            const menuContainer = document.getElementById('menuContainer');
+            menuContainer.innerHTML = '';
+            res.menu.forEach(item => {
+                menuContainer.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-4">
+                        <img src="${item.image}" class="w-24 h-24 rounded-xl object-cover">
+                        <div class="flex-grow">
+                            <h5 class="font-bold text-gray-800">${item.name}</h5>
+                            <p class="text-orange-500 font-semibold mt-1">$${item.price.toFixed(2)}</p>
+                            <button onclick="addToCart('${item.name}', ${item.price})" class="mt-2 bg-orange-500 hover:bg-orange-600 text-white text-xs px-4 py-2 rounded-lg transition font-medium">Add to Cart</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function backToRestaurants() {
+            document.querySelector('main section.hero-bg').classList.remove('hidden');
+            document.getElementById('restaurantContainer').parentElement.classList.remove('hidden');
+            document.getElementById('menuSection').classList.add('hidden');
+        }
+
+        function toggleCart() {
+            const drawer = document.getElementById('cartDrawer');
+            drawer.classList.toggle('hidden');
+        }
+
+        function addToCart(name, price) {
+            const existing = cart.find(item => item.name === name);
+            if(existing) {
+                existing.qty++;
+            } else {
+                cart.push({ name, price, qty: 1 });
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            document.getElementById('cartCount').innerText = cart.reduce((sum, item) => sum + item.qty, 0);
+            const container = document.getElementById('cartItems');
+            container.innerHTML = '';
+            let total = 0;
+
+            if(cart.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-400 py-10">Your cart is empty.</p>`;
+            }
+
+            cart.forEach((item, index) => {
+                total += item.price * item.qty;
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
+                        <div>
+                            <h6 class="font-semibold text-sm">${item.name}</h6>
+                            <p class="text-xs text-gray-500">$${item.price} x ${item.qty}</p>
+                        </div>
+                        <button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-700 text-xs font-semibold">Remove</button>
+                    </div>
+                `;
+            });
+            document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function checkout() {
+            if(cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+            alert("Order placed successfully! (This data will be saved to Supabase orders table).");
+            cart = [];
+            updateCartUI();
+            toggleCart();
+        }
+
+        // Initial Load
+        renderRestaurants(restaurants);
     </script>
 </body>
 </html>
