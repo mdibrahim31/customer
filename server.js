@@ -43,20 +43,16 @@ bot.on('message', async (msg) => {
 });
 
 app.get('/get-menu', async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('menus')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+        const { data, error } = await supabase
+            .from('menus')
+            .select('*')
+            .order('id', { ascending: false });
 
-    if (error) throw error;
-    res.json({ success: true, menu: data });
-  } catch (err) {
-    console.error("Fetch error:", err.message);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+        if (error) throw error;
+        res.json({ success: true, menu: data });
+    } catch (err) {
+        console.error("Fetch error:", err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
 });
