@@ -3,12 +3,12 @@ const { createClient } = require('@supabase/supabase-js');
 const axios = require('axios');
 const FormData = require('form-data');
 
-// Initialize Telegram Bot with your Bot Token (from BotFather)
-const bot = new Telegraf('YOUR_TELEGRAM_BOT_TOKEN');
+// Initialize Telegram Bot with Environment Variable
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// Initialize Supabase Client
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_SERVICE_KEY = 'YOUR_SUPABASE_SERVICE_KEY_OR_ANON_KEY';
+// Initialize Supabase Client with Environment Variables
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 // Define Supabase Storage bucket name
