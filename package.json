@@ -8,8 +8,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "axios": "^1.6.0",
+    "express": "^4.19.2",
     "form-data": "^4.0.0",
     "telegraf": "^4.15.3"
   }
 }
-
