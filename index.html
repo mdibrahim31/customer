@@ -77,10 +77,6 @@
         <section class="max-w-7xl mx-auto px-4 py-12">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold text-gray-800">Featured Restaurants</h3>
-                <div id="activeCartWarning" class="hidden text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-medium flex items-center gap-2">
-                    <span>Cart has items from <strong id="warningResName"></strong></span>
-                    <button onclick="clearCartAndReset()" class="underline font-bold">Clear Cart</button>
-                </div>
             </div>
             <div id="restaurantContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Dynamically loaded via JavaScript -->
@@ -245,15 +241,7 @@
         function openRestaurant(id) {
             const res = restaurants.find(r => r.id === id);
 
-            // Jodi cart-e already onno restaurant-er item thake, tahole onno restaurant e dhukte dibe na ebong warning dibe
-            if(cart.length > 0 && currentRestaurantId !== res.id) {
-                alert(`⚠️ Ekti order-e duita alada restaurant ( ${currentRestaurantName} ebong ${res.name} ) theke item add kora jabe na!\n\nOnno restaurant theke order korte hole age apnake Cart khali (clear) korte hobe.`);
-                return;
-            }
-
-            currentRestaurantId = res.id;
-            currentRestaurantName = res.name;
-
+            // Ekhane kono badha thakbe na, user je kono restaurant-er menu te dhukte parbe.
             document.querySelector('main section.hero-bg').classList.add('hidden');
             document.getElementById('restaurantContainer').parentElement.classList.add('hidden');
             
@@ -298,9 +286,14 @@
         }
 
         function addToCart(resId, resName, itemName, itemPrice) {
+            // Jodi cart-e already onno restaurant-er item thake, tahole confirmation popup ashbe (Cancel / OK)
             if(cart.length > 0 && currentRestaurantId !== resId) {
-                alert(`Apni ${currentRestaurantName} theke item select korechen. Ekti order-e duita alada restaurant theke item add kora jabe na!`);
-                return;
+                const confirmReplace = confirm(`Your cart contains items from "${currentRestaurantName}". Do you want to clear your cart and add items from "${resName}"?`);
+                if(!confirmReplace) {
+                    return; // Cancel korle kichu hobe na
+                }
+                // OK korle ager cart clear hoye notun restaurant set hobe
+                cart = [];
             }
 
             currentRestaurantId = resId;
@@ -328,16 +321,10 @@
             document.getElementById('cartCount').innerText = totalCount;
             
             const badge = document.getElementById('cartRestaurantBadge');
-            const warningBox = document.getElementById('activeCartWarning');
-            const warningResName = document.getElementById('warningResName');
-
             if(cart.length > 0) {
                 badge.innerText = `Ordering from: ${currentRestaurantName}`;
-                warningBox.classList.remove('hidden');
-                warningResName.innerText = currentRestaurantName;
             } else {
                 badge.innerText = "";
-                warningBox.classList.add('hidden');
                 currentRestaurantId = null;
                 currentRestaurantName = "";
             }
@@ -367,16 +354,6 @@
                 `;
             });
             document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
-        }
-
-        function clearCartAndReset() {
-            if(confirm("Are you sure you want to clear your cart?")) {
-                cart = [];
-                currentRestaurantId = null;
-                currentRestaurantName = "";
-                updateCartUI();
-                backToRestaurants();
-            }
         }
 
         function placeOrder() {
@@ -426,4 +403,3 @@
     </script>
 </body>
 </html>
-
