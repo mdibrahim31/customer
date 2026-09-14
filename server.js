@@ -56,3 +56,7 @@ app.get('/get-menu', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
