@@ -1,14 +1,14 @@
 {
-  "name": "telegram-bot-render-pg-backend",
+  "name": "telegram-bot-supabase-backend",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.8",
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "node-telegram-bot-api": "^0.66.0",
-    "pg": "^8.11.3"
+    "node-telegram-bot-api": "^0.66.0"
   }
 }
