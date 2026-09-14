@@ -2,6 +2,19 @@ const { Telegraf } = require('telegraf');
 const { createClient } = require('@supabase/supabase-js');
 const axios = require('axios');
 const FormData = require('form-data');
+const express = require('express');
+
+// Initialize Express server for Render Web Service port check
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+    res.send('Telegram Bot is running smoothly!');
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
+});
 
 // Initialize Telegram Bot with Environment Variable
 const bot = new Telegraf(process.env.BOT_TOKEN);
