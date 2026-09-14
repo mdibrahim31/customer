@@ -2,44 +2,162 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Live Menu from Supabase</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Image Gallery</title>
+    <!-- Google Fonts & Supabase JS SDK -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        ul { list-style-type: square; }
-        li { margin-bottom: 8px; font-size: 18px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: #334155;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: #0f172a;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        /* Grid Layout for Cards */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-content h3 {
+            font-size: 1.2rem;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .card-content p {
+            font-size: 0.95rem;
+            color: #64748b;
+        }
+
+        .loading, .error {
+            text-align: center;
+            grid-column: 1 / -1;
+            font-size: 1.2rem;
+            color: #64748b;
+            padding: 40px;
+        }
     </style>
 </head>
 <body>
-    <h2>Live Restaurant/Shop Menu (via Telegram & Supabase)</h2>
-    <ul id="menuList">Loading menu...</ul>
+
+    <div class="container">
+        <header>
+            <h1>My Supabase Gallery</h1>
+            <p>Images and data loaded directly from Supabase Database</p>
+        </header>
+
+        <div class="gallery-grid" id="galleryContainer">
+            <div class="loading">Loading data from Supabase...</div>
+        </div>
+    </div>
 
     <script>
-        const BACKEND_URL = "https://hello-world-lllw.onrender.com";
+        // --- SUPABASE CONFIGURATION ---
+        // Apnar Supabase project er credentials ekhane boshan:
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
-        function fetchMenu() {
-            fetch(`${BACKEND_URL}/get-menu`)
-                .then(res => res.json())
-                .then(data => {
-                    const listElement = document.getElementById("menuList");
-                    listElement.innerHTML = "";
+        // Supabase client initialize kora
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-                    if (data.success && data.menu.length > 0) {
-                        data.menu.forEach(item => {
-                            const li = document.createElement("li");
-                            li.innerText = item.item_name;
-                            listElement.appendChild(li);
-                        });
-                    } else {
-                        listElement.innerHTML = "<li>Kono menu nei ekhono. Bot-e message pathan!</li>";
-                    }
-                })
-                .catch(err => {
-                    console.error("Error:", err);
-                    document.getElementById("menuList").innerHTML = "<li>Menu load korte error hoyeche!</li>";
+        async function fetchImagesFromSupabase() {
+            const container = document.getElementById('galleryContainer');
+
+            try {
+                // 'posts' ba apnar table-er name ekhane dite hobe
+                const { data, error } = await _supabase
+                    .from('posts') 
+                    .select('*');
+
+                if (error) {
+                    throw error;
+                }
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = `<div class="loading">No data found in database!</div>`;
+                    return;
+                }
+
+                // Data paowar por HTML generate kora
+                container.innerHTML = '';
+                data.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    
+                    card.innerHTML = `
+                        <img src="${item.image_url}" alt="${item.title || 'Image'}">
+                        <div class="card-content">
+                            <h3>${item.title || 'Untitled'}</h3>
+                            <p>${item.description || ''}</p>
+                        </div>
+                    `;
+                    container.appendChild(card);
                 });
+
+            } catch (err) {
+                console.error('Error fetching data:', err);
+                container.innerHTML = `<div class="error">Failed to load data. Please check Supabase credentials.</div>`;
+            }
         }
 
-        fetchMenu();
+        // Page load holei function call hobe
+        fetchImagesFromSupabase();
     </script>
 </body>
 </html>
