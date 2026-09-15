@@ -1,19 +1,32 @@
 require('dotenv').config();
 const { Telegraf, Markup } = require('telegraf');
 const { createClient } = require('@supabase/supabase-js');
+const express = require('express'); // Express added for UptimeRobot ping
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-const ADMIN_ID = process.env.ADMIN_TELEGRAM_ID; // Admin er Telegram User ID
+const ADMIN_ID = process.env.ADMIN_TELEGRAM_ID;
 const adminSession = {};
 const vendorSession = {};
 
-// --- START COMMAND (Separate Interfaces for Admin, Vendor, Rider, Customer) ---
+// --- EXPRESS SERVER FOR RENDER & UPTIMEROBOT PING ---
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+    res.send('FoodHub Bot is running live 24/7!');
+});
+
+app.listen(PORT, () => {
+    console.log(`Keep-alive web server is running on port ${PORT}`);
+});
+// ----------------------------------------------------
+
+// --- START COMMAND ---
 bot.start(async (ctx) => {
     const userId = ctx.from.id.toString();
 
-    // 1. Admin Interface
     if (userId === ADMIN_ID) {
         return ctx.reply('👑 *Admin Control Panel*', {
             parse_mode: 'Markdown',
@@ -25,10 +38,9 @@ bot.start(async (ctx) => {
         });
     }
 
-    // 2. Check if user is registered as Vendor
     const { data: vendorData } = await supabase.from('vendors').select('*').eq('telegram_id', userId).single();
     if (vendorData) {
-        return ctx.reply(`🏪 *Vendor Panel (${vendorData.name})*\nManage your restaurant & orders:`, {
+        return ctx.reply(`🏪 *Vendor Panel (${vendorData.name})*`, {
             parse_mode: 'Markdown',
             ...Markup.inlineKeyboard([
                 [Markup.button.callback('📦 View Active Orders', 'vendor_orders')],
@@ -37,19 +49,17 @@ bot.start(async (ctx) => {
         });
     }
 
-    // 3. Check if user is registered as Rider
     const { data: riderData } = await supabase.from('riders').select('*').eq('telegram_id', userId).single();
     if (riderData) {
         return ctx.reply(`🚴 *Rider Panel (${riderData.name})*\nStatus: *${riderData.status}*`, {
             parse_mode: 'Markdown',
             ...Markup.inlineKeyboard([
-                [Markup.button.callback('🔄 Toggle Status (Available/Offline)', 'rider_toggle_status')],
+                [Markup.button.callback('🔄 Toggle Status', 'rider_toggle_status')],
                 [Markup.button.callback('📦 Available Deliveries', 'rider_jobs')]
             ])
         });
     }
 
-    // 4. Default Customer / New User Interface
     ctx.reply('🍔 *Welcome to FoodHub Bot!*', {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([
@@ -58,7 +68,6 @@ bot.start(async (ctx) => {
         ])
     });
 });
-
 
 // ================= ADMIN WORKFLOW =================
 bot.action('admin_add_res', (ctx) => {
@@ -81,7 +90,6 @@ bot.action(/admin_menu_res_(\d+)/, (ctx) => {
     ctx.reply('Enter Menu Item Name:');
 });
 
-// Admin Text Handler for Multi-step Inputs
 bot.on('text', async (ctx, next) => {
     const userId = ctx.from.id;
     const session = adminSession[userId];
@@ -100,12 +108,11 @@ bot.on('text', async (ctx, next) => {
     if (session.step === 'res_phone') {
         session.phone = ctx.message.text;
         session.step = 'res_location';
-        return ctx.reply('Please share current location/address using Telegram Location button or text description:', Markup.keyboard([
+        return ctx.reply('Please share current location/address:', Markup.keyboard([
             [Markup.button.locationRequest('📍 Share Current Location')]
         ]).resize().oneTime());
     }
 
-    // Menu steps
     if (session.step === 'menu_name') {
         session.menuName = ctx.message.text;
         session.step = 'menu_price';
@@ -124,7 +131,7 @@ bot.on('text', async (ctx, next) => {
             name: session.menuName,
             price: session.menuPrice,
             discount: session.menuDiscount,
-            is_boosted: session.menuDiscount > 0 ? true : false,
+            is_boosted: session.menuDiscount > 0,
             image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'
         }]);
 
@@ -133,15 +140,10 @@ bot.on('text', async (ctx, next) => {
     }
 });
 
-// Admin Location Share for Restaurant Registration
 bot.on('location', async (ctx) => {
     const userId = ctx.from.id;
     const session = adminSession[userId];
     if (!session || session.step !== 'res_location') return;
-
-    const lat = ctx.message.location.latitude;
-    const lon = ctx.message.location.longitude;
-    const addressLink = `https://maps.google.com/?q=${lat},${lon}`;
 
     await supabase.from('restaurants').insert([{
         name: session.name,
@@ -150,14 +152,27 @@ bot.on('location', async (ctx) => {
         image: 'https://images.unsplash.com/photo-1552566626-52f8b828add9'
     }]);
 
-    ctx.reply(`✅ Restaurant "${session.name}" saved with location successfully!`, Markup.removeKeyboard());
+    ctx.reply(`✅ Restaurant "${session.name}" saved successfully!`, Markup.removeKeyboard());
     delete adminSession[userId];
 });
 
-
-// ================= RIDER REGISTRATION WORKFLOW =================
+// ================= RIDER & VENDOR REGISTRATION =================
 bot.action('rider_register', (ctx) => {
-    ctx.reply('To register as rider, please share your contact details:', Markup.keyboard([
+    ctx.reply('To register as rider, share your phone number:', Markup.keyboard([
+        [Markup.button.contactRequest('📱 Share Phone Number')]
+    ]).resize().oneTime());
+});
+
+bot.action('vendor_register', async (ctx) => {
+    const { data: restaurants } = await supabase.from('restaurants').select('id, name');
+    if (!restaurants || restaurants.length === 0) return ctx.reply('No restaurants found.');
+    let buttons = restaurants.map(res => [Markup.button.callback(res.name, `select_vendor_res_${res.id}`)]);
+    ctx.reply('Select your restaurant:', Markup.inlineKeyboard(buttons));
+});
+
+bot.action(/select_vendor_res_(\d+)/, (ctx) => {
+    vendorSession[ctx.from.id] = { step: 'phone', resId: ctx.match[1] };
+    ctx.reply('Share your phone number for vendor registration:', Markup.keyboard([
         [Markup.button.contactRequest('📱 Share Phone Number')]
     ]).resize().oneTime());
 });
@@ -168,117 +183,16 @@ bot.on('contact', async (ctx) => {
     const name = `${ctx.from.first_name || ''} ${ctx.from.last_name || ''}`.trim();
     const phone = contact.phone_number;
 
-    // Check if registering as Rider or Vendor
     const vSession = vendorSession[telegramId];
     if (vSession && vSession.step === 'phone') {
-        await supabase.from('vendors').insert([{
-            telegram_id: telegramId,
-            restaurant_id: vSession.resId,
-            name: name,
-            phone: phone
-        }]);
+        await supabase.from('vendors').insert([{ telegram_id: telegramId, restaurant_id: vSession.resId, name, phone }]);
         delete vendorSession[telegramId];
-        return ctx.reply('✅ Vendor Registration Successful! Send /start to open panel.', Markup.removeKeyboard());
+        return ctx.reply('✅ Vendor Registration Successful!', Markup.removeKeyboard());
     }
 
-    // Default Rider Registration
-    const { error } = await supabase.from('riders').upsert([{
-        telegram_id: telegramId,
-        name: name,
-        phone: phone,
-        status: 'Available'
-    }], { onConflict: 'telegram_id' });
-
-    if (error) {
-        ctx.reply('Registration failed. Try again.');
-    } else {
-        ctx.reply('✅ Rider Registration Successful! Send /start to access your dashboard.', Markup.removeKeyboard());
-    }
-});
-
-
-// ================= VENDOR REGISTRATION WORKFLOW =================
-bot.action('vendor_register', async (ctx) => {
-    const { data: restaurants } = await supabase.from('restaurants').select('id, name');
-    if (!restaurants || restaurants.length === 0) {
-        return ctx.reply('No restaurants found in database. Contact Admin first.');
-    }
-
-    let buttons = restaurants.map(res => [Markup.button.callback(res.name, `select_vendor_res_${res.id}`)]);
-    ctx.reply('Select your restaurant:', Markup.inlineKeyboard(buttons));
-});
-
-bot.action(/select_vendor_res_(\d+)/, (ctx) => {
-    const resId = ctx.match[1];
-    vendorSession[ctx.from.id] = { step: 'phone', resId: resId };
-
-    ctx.reply('Please share your phone number to complete vendor registration:', Markup.keyboard([
-        [Markup.button.contactRequest('📱 Share Phone Number')]
-    ]).resize().oneTime());
-});
-
-
-// ================= ORDER NOTIFICATION & PIPELINE =================
-// Note: Call this function when order is placed from website
-async function notifyVendorOnOrder(orderData) {
-    // Find vendor connected to this restaurant
-    const { data: res } = await supabase.from('restaurants').select('id').eq('name', orderData.restaurant_name).single();
-    if (!res) return;
-
-    const { data: vendor } = await supabase.from('vendors').select('telegram_id').eq('restaurant_id', res.id).single();
-    if (!vendor) return;
-
-    let itemsText = orderData.items.map(i => `- ${i.name} x ${i.qty} ($${i.price})`).join('\n');
-    let message = `🚨 *New Order Received!*\n\n` +
-                  `*Customer:* ${orderData.customer_name}\n` +
-                  `*Mobile:* ${orderData.mobile}\n` +
-                  `*Address:* ${orderData.address}\n\n` +
-                  `*Items:*\n${itemsText}\n\n` +
-                  `*Total:* $${orderData.total_amount}`;
-
-    await bot.telegram.sendMessage(vendor.telegram_id, message, {
-        parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([
-            [Markup.button.callback(`✅ Accept Order`, `vendor_accept_${orderData.id}`)],
-            [Markup.button.callback(`❌ Reject Order`, `vendor_reject_${orderData.id}`)]
-        ])
-    });
-}
-
-// Vendor Accepts Order -> Push to Riders
-bot.action(/vendor_accept_(\d+)/, async (ctx) => {
-    const orderId = ctx.match[1];
-    await ctx.editMessageText(`Order Accepted. Broadcasting to nearby riders...`);
-
-    const { data: order } = await supabase.from('orders').select('*').eq('id', orderId).single();
-    if (!order) return;
-
-    const { data: riders } = await supabase.from('riders').select('telegram_id').eq('status', 'Available');
-    if (!riders || riders.length === 0) {
-        return ctx.reply('⚠️ No available riders found right now.');
-    }
-
-    riders.forEach(async (rider) => {
-        await bot.telegram.sendMessage(rider.telegram_id, `📦 *New Delivery Job Available!*\n\n*Restaurant:* ${order.restaurant_name}\n*Delivery Address:* ${order.address}`, {
-            parse_mode: 'Markdown',
-            ...Markup.inlineKeyboard([
-                [Markup.button.callback(`Accept Delivery`, `rider_accept_${order.id}`)]
-            ])
-        });
-    });
-});
-
-// Rider Accepts Delivery
-bot.action(/rider_accept_(\d+)/, async (ctx) => {
-    const orderId = ctx.match[1];
-    const { error } = await supabase.from('orders').update({ status: 'Out for Delivery' }).eq('id', orderId);
-
-    if (error) {
-        return ctx.reply('⚠️ This order was already accepted by another rider.');
-    }
-
-    await ctx.editMessageText(`🎉 You have successfully accepted Delivery Job #${orderId}. Please proceed to restaurant.`);
+    await supabase.from('riders').upsert([{ telegram_id: telegramId, name, phone, status: 'Available' }], { onConflict: 'telegram_id' });
+    ctx.reply('✅ Rider Registration Successful!', Markup.removeKeyboard());
 });
 
 bot.launch();
-console.log('FoodHub Telegram Bot is running successfully...');
+console.log('FoodHub Telegram Bot & Express Server running...');
