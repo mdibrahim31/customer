@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FoodHub - Discover & Order Delicious Food</title>
+    <title>FoodHub - Live Database Ordering</title>
     <!-- Google Fonts & Tailwind CSS -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -24,16 +25,6 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between">
-
-    <!-- Welcome Modal -->
-    <div id="welcomeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm transition-opacity duration-500">
-        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl animate-fade-in">
-            <div class="w-16 h-16 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">🍔</div>
-            <h2 class="text-2xl font-bold mb-2">Welcome to FoodHub!</h2>
-            <p class="text-gray-600 mb-6">Discover the best restaurants and delicious foods around you with instant ordering.</p>
-            <button onclick="closeWelcomeModal()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-orange-500/30">Explore Foods</button>
-        </div>
-    </div>
 
     <!-- Custom Restaurant Replace Confirmation Modal -->
     <div id="customConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
@@ -79,14 +70,14 @@
             </div>
         </section>
 
-        <!-- Admin Boosted Menus Horizontal Slider Section (Requested Spot) -->
+        <!-- Admin Boosted Menus Horizontal Slider Section -->
         <section class="max-w-7xl mx-auto px-4 pt-6 pb-2">
             <div class="flex items-center justify-between mb-3">
                 <h3 class="text-lg font-bold text-gray-800 flex items-center gap-1.5">🔥 Featured & Boosted Deals</h3>
                 <span class="text-xs text-gray-400">Swipe right to left ➔</span>
             </div>
             <div id="boostedSliderContainer" class="flex gap-4 overflow-x-auto no-scrollbar pb-3">
-                <!-- Dynamically loaded boosted/discounted items for horizontal scrolling -->
+                <!-- Dynamically loaded from database -->
             </div>
         </section>
 
@@ -114,14 +105,6 @@
                     <span class="text-2xl mb-1">🏡</span>
                     <span class="text-xs font-semibold text-gray-700">Home Kitchen</span>
                 </button>
-                <button onclick="filterByCategory('Cloud Kitchen')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border border-gray-100 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
-                    <span class="text-2xl mb-1">☁️</span>
-                    <span class="text-xs font-semibold text-gray-700">Cloud Kitchen</span>
-                </button>
-                <button onclick="filterByCategory('Snacks')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border border-gray-100 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
-                    <span class="text-2xl mb-1">🍟</span>
-                    <span class="text-xs font-semibold text-gray-700">Snacks</span>
-                </button>
             </div>
         </section>
 
@@ -131,7 +114,7 @@
                 <h3 class="text-2xl font-bold text-gray-800">Featured Restaurants</h3>
             </div>
             <div id="restaurantContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Dynamically loaded via JavaScript -->
+                <!-- Loaded dynamically from database -->
             </div>
         </section>
 
@@ -140,25 +123,10 @@
             <button onclick="backToRestaurants()" class="mb-6 flex items-center gap-2 text-orange-500 font-semibold hover:underline">
                 <i data-lucide="arrow-left" class="w-5 h-5"></i> Back to Restaurants
             </button>
-            <div id="restaurantHeader" class="bg-white p-6 rounded-2xl shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                <!-- Dynamic Restaurant Info -->
-            </div>
+            <div id="restaurantHeader" class="bg-white p-6 rounded-2xl shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center gap-4"></div>
 
-            <!-- Special Discounted Menu Items (Shown at the Top inside Restaurant View) -->
-            <div id="discountSection" class="mb-10 hidden">
-                <div class="flex items-center gap-2 mb-4">
-                    <span class="text-xl">🔥</span>
-                    <h4 class="text-xl font-bold text-gray-800">Special Discount Offers</h4>
-                </div>
-                <div id="discountMenuContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Dynamic Discount Items -->
-                </div>
-            </div>
-
-            <h4 class="text-xl font-bold mb-6">All Menu Items</h4>
-            <div id="menuContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Dynamic Menu Items -->
-            </div>
+            <h4 class="text-xl font-bold mb-6">Menu Items</h4>
+            <div id="menuContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
     </main>
 
@@ -174,9 +142,7 @@
                     <button onclick="toggleCart()" class="text-gray-500 hover:text-gray-700"><i data-lucide="x" class="w-6 h-6"></i></button>
                 </div>
                 
-                <div id="cartItems" class="space-y-3 mb-6">
-                    <!-- Cart items -->
-                </div>
+                <div id="cartItems" class="space-y-3 mb-6"></div>
 
                 <!-- Checkout Form Fields -->
                 <div id="checkoutForm" class="space-y-3 border-t pt-4">
@@ -215,78 +181,49 @@
         <p>&copy; 2026 FoodHub. All rights reserved.</p>
     </footer>
 
-    <!-- JavaScript Application Logic -->
+    <!-- JavaScript Application & Supabase Integration -->
     <script>
         lucide.createIcons();
 
-        const restaurants = [
-            {
-                id: 1,
-                name: "Burger & Co.",
-                category: "Fast Food",
-                rating: 4.8,
-                image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80",
-                menu: [
-                    { id: 101, name: "Cheeseburger Deluxe", price: 10.00, discount: 20, isBoosted: true, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80" }, // Admin Boosted & Discounted
-                    { id: 102, name: "Crispy Chicken Burger", price: 7.49, discount: 0, isBoosted: false, image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=400&q=80" },
-                    { id: 103, name: "French Fries", price: 3.00, discount: 10, isBoosted: true, image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=400&q=80" } // Admin Boosted & Discounted
-                ]
-            },
-            {
-                id: 2,
-                name: "Little Italy Pizzeria",
-                category: "Italian",
-                rating: 4.9,
-                image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
-                menu: [
-                    { id: 201, name: "Margherita Pizza", price: 15.00, discount: 30, isBoosted: true, image: "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?auto=format&fit=crop&w=400&q=80" }, // Admin Boosted & Discounted
-                    { id: 202, name: "Pepperoni Feast", price: 15.49, discount: 0, isBoosted: false, image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=400&q=80" }
-                ]
-            },
-            {
-                id: 3,
-                name: "Spicy Dhaka Biryani",
-                category: "Desi",
-                rating: 4.7,
-                image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=600&q=80",
-                menu: [
-                    { id: 301, name: "Mutton Kacchi Biryani", price: 12.00, discount: 15, isBoosted: true, image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=400&q=80" }, // Admin Boosted & Discounted
-                    { id: 302, name: "Chicken Roast & Polao", price: 7.99, discount: 0, isBoosted: false, image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=400&q=80" }
-                ]
-            },
-            {
-                id: 4,
-                name: "Auntie's Home Kitchen",
-                category: "Home Kitchen",
-                rating: 4.9,
-                image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80",
-                menu: [
-                    { id: 401, name: "Homestyle Beef Curry & Rice", price: 8.00, discount: 25, isBoosted: true, image: "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=400&q=80" } // Admin Boosted & Discounted
-                ]
-            },
-            {
-                id: 5,
-                name: "ByteBite Cloud Kitchen",
-                category: "Cloud Kitchen",
-                rating: 4.6,
-                image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80",
-                menu: [
-                    { id: 501, name: "Ghost Pepper Wings", price: 5.99, discount: 0, isBoosted: false, image: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=400&q=80" }
-                ]
-            }
-        ];
+        // Initialize Supabase Client (Apnar credentials ekhane din)
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        let restaurants = [];
         let cart = [];
         let currentRestaurantId = null;
         let currentRestaurantName = "";
         let pendingItem = null;
         let selectedCategory = "all";
 
-        function closeWelcomeModal() {
-            document.getElementById('welcomeModal').classList.add('hidden');
+        // Fetch Data from Supabase Database on Load
+        async function fetchAppData() {
+            try {
+                // Fetch Restaurants
+                const { data: resData, error: resError } = await supabaseClient.from('restaurants').select('*');
+                if (resError) throw resError;
+
+                // Fetch Menus with Restaurant Info
+                const { data: menuData, error: menuError } = await supabaseClient.from('menus').select('*, restaurants(name)');
+                if (menuError) throw menuError;
+
+                // Structure data properly
+                restaurants = resData.map(res => {
+                    return {
+                        ...res,
+                        menu: menuData.filter(m => m.restaurant_id === res.id)
+                    };
+                });
+
+                renderBoostedSlider();
+                renderRestaurants(restaurants);
+            } catch (err) {
+                console.error("Error loading data from Supabase:", err);
+            }
         }
 
-        // Render Admin Boosted Items in Horizontal Slider on Home Page
+        // Render Admin Boosted Items in Horizontal Slider
         function renderBoostedSlider() {
             const container = document.getElementById('boostedSliderContainer');
             container.innerHTML = '';
@@ -294,8 +231,8 @@
             let boostedItems = [];
             restaurants.forEach(res => {
                 res.menu.forEach(item => {
-                    if (item.isBoosted) {
-                        boostedItems.push({ ...item, resId: res.id, resName: res.name });
+                    if (item.is_boosted) {
+                        boostedItems.push({ ...item, resId: res.id, resName: res.restaurants ? res.restaurants.name : res.name });
                     }
                 });
             });
@@ -306,12 +243,12 @@
             }
 
             boostedItems.forEach(item => {
-                const discountedPrice = item.price - (item.price * item.discount / 100);
+                const discountedPrice = item.price - (item.price * (item.discount || 0) / 100);
                 container.innerHTML += `
                     <div class="flex-shrink-0 w-72 bg-white rounded-2xl shadow-sm border border-orange-100 overflow-hidden flex flex-col justify-between p-3 relative group">
-                        <span class="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">${item.discount}% OFF</span>
+                        ${item.discount > 0 ? `<span class="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">${item.discount}% OFF</span>` : ''}
                         <div class="h-32 w-full rounded-xl overflow-hidden mb-2 cursor-pointer" onclick="openRestaurant(${item.resId})">
-                            <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            <img src="${item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                         </div>
                         <div>
                             <span class="text-[10px] text-orange-500 font-semibold">${item.resName}</span>
@@ -319,7 +256,7 @@
                             <div class="flex items-center justify-between mt-2">
                                 <div>
                                     <span class="text-orange-500 font-bold text-sm">$${discountedPrice.toFixed(2)}</span>
-                                    <span class="text-gray-400 text-xs line-through ml-1">$${item.price.toFixed(2)}</span>
+                                    ${item.discount > 0 ? `<span class="text-gray-400 text-xs line-through ml-1">$${item.price.toFixed(2)}</span>` : ''}
                                 </div>
                                 <button onclick="addToCart(${item.resId}, '${item.resName}', '${item.name}', ${discountedPrice})" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 rounded-lg transition font-medium shadow-sm">Add</button>
                             </div>
@@ -333,20 +270,20 @@
             const container = document.getElementById('restaurantContainer');
             container.innerHTML = '';
             if(data.length === 0) {
-                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found in this category.</p>`;
+                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found in database.</p>`;
                 return;
             }
             data.forEach(res => {
                 container.innerHTML += `
                     <div onclick="openRestaurant(${res.id})" class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition cursor-pointer group">
                         <div class="h-48 overflow-hidden">
-                            <img src="${res.image}" alt="${res.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <img src="${res.image || 'https://images.unsplash.com/photo-1552566626-52f8b828add9'}" alt="${res.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                         </div>
                         <div class="p-5">
                             <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">${res.category}</span>
                             <h4 class="text-lg font-bold mt-2 text-gray-800">${res.name}</h4>
                             <div class="flex items-center gap-1 text-yellow-500 mt-2 text-sm font-semibold">
-                                <i data-lucide="star" class="w-4 h-4 fill-current"></i> ${res.rating}
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i> ${res.rating || 5.0}
                             </div>
                         </div>
                     </div>
@@ -378,11 +315,11 @@
 
         function openRestaurant(id) {
             const res = restaurants.find(r => r.id === id);
+            if(!res) return;
 
             document.querySelector('main section.hero-bg').classList.add('hidden');
-            // Hide boosted slider and categories when inside restaurant menu view
-            document.querySelector('main section:nth-of-type(2)').classList.add('hidden'); // Boosted slider
-            document.querySelector('main section:nth-of-type(3)').classList.add('hidden'); // Categories
+            document.querySelector('main section:nth-of-type(2)').classList.add('hidden');
+            document.querySelector('main section:nth-of-type(3)').classList.add('hidden');
             document.getElementById('restaurantContainer').parentElement.classList.add('hidden');
             
             const menuSection = document.getElementById('menuSection');
@@ -390,55 +327,30 @@
 
             document.getElementById('restaurantHeader').innerHTML = `
                 <div class="flex items-center gap-4">
-                    <img src="${res.image}" class="w-20 h-20 rounded-xl object-cover">
+                    <img src="${res.image || 'https://images.unsplash.com/photo-1552566626-52f8b828add9'}" class="w-20 h-20 rounded-xl object-cover">
                     <div>
                         <h3 class="text-2xl font-bold">${res.name}</h3>
-                        <p class="text-gray-500">${res.category} • ⭐ ${res.rating}</p>
+                        <p class="text-gray-500">${res.category} • ⭐ ${res.rating || 5.0}</p>
                     </div>
                 </div>
             `;
 
-            // Separate Discounted and Regular Menu Items
-            const discountedItems = res.menu.filter(item => item.discount > 0);
-            const regularItems = res.menu;
-
-            const discountSection = document.getElementById('discountSection');
-            const discountContainer = document.getElementById('discountMenuContainer');
-            discountContainer.innerHTML = '';
-
-            if(discountedItems.length > 0) {
-                discountSection.classList.remove('hidden');
-                discountedItems.forEach(item => {
-                    const discountedPrice = item.price - (item.price * item.discount / 100);
-                    discountContainer.innerHTML += `
-                        <div class="bg-white p-4 rounded-2xl shadow-md border-2 border-orange-200 flex items-center gap-4 relative overflow-hidden">
-                            <span class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${item.discount}% OFF</span>
-                            <img src="${item.image}" class="w-24 h-24 rounded-xl object-cover">
-                            <div class="flex-grow">
-                                <h5 class="font-bold text-gray-800">${item.name}</h5>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-orange-500 font-bold">$${discountedPrice.toFixed(2)}</span>
-                                    <span class="text-gray-400 text-xs line-through">$${item.price.toFixed(2)}</span>
-                                </div>
-                                <button onclick="addToCart(${res.id}, '${res.name}', '${item.name}', ${discountedPrice})" class="mt-2 bg-orange-500 hover:bg-orange-600 text-white text-xs px-4 py-2 rounded-lg transition font-medium shadow-sm">Add to Cart</button>
-                            </div>
-                        </div>
-                    `;
-                });
-            } else {
-                discountSection.classList.add('hidden');
-            }
-
             const menuContainer = document.getElementById('menuContainer');
             menuContainer.innerHTML = '';
-            regularItems.forEach(item => {
+            
+            if(res.menu.length === 0) {
+                menuContainer.innerHTML = `<p class="col-span-full text-center text-gray-400 py-6">No menu items available for this restaurant.</p>`;
+                return;
+            }
+
+            res.menu.forEach(item => {
                 const hasDiscount = item.discount > 0;
                 const finalPrice = hasDiscount ? item.price - (item.price * item.discount / 100) : item.price;
                 
                 menuContainer.innerHTML += `
                     <div class="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-4 relative">
                         ${hasDiscount ? `<span class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${item.discount}% OFF</span>` : ''}
-                        <img src="${item.image}" class="w-24 h-24 rounded-xl object-cover">
+                        <img src="${item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}" class="w-24 h-24 rounded-xl object-cover">
                         <div class="flex-grow">
                             <h5 class="font-bold text-gray-800">${item.name}</h5>
                             <div class="flex items-center gap-2 mt-1">
@@ -461,8 +373,7 @@
         }
 
         function toggleCart() {
-            const drawer = document.getElementById('cartDrawer');
-            drawer.classList.toggle('hidden');
+            document.getElementById('cartDrawer').classList.toggle('hidden');
         }
 
         function addToCart(resId, resName, itemName, itemPrice) {
@@ -472,7 +383,6 @@
                 document.getElementById('customConfirmModal').classList.remove('hidden');
                 return;
             }
-
             executeAddToCart(resId, resName, itemName, itemPrice);
         }
 
@@ -546,13 +456,14 @@
             document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
         }
 
-        function placeOrder() {
+        // Place Order: Save to Supabase 'orders' table & trigger Bot notification
+        async function placeOrder() {
             if(cart.length === 0) {
                 alert("Your cart is empty!");
                 return;
             }
 
-            const name = document.getElementById('custName...').value || document.getElementById('custName').value.trim();
+            const name = document.getElementById('custName').value.trim();
             const mobile = document.getElementById('custMobile').value.trim();
             const address = document.getElementById('custAddress').value.trim();
             const mapLink = document.getElementById('custMapLink').value.trim();
@@ -562,35 +473,56 @@
                 return;
             }
 
-            const orderData = {
-                restaurant: currentRestaurantName,
+            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+            const newOrder = {
+                restaurant_name: currentRestaurantName,
                 customer_name: name,
                 mobile: mobile,
                 address: address,
                 map_link: mapLink,
                 items: cart,
-                total_amount: cart.reduce((sum, item) => sum + (item.price * item.qty), 0)
+                total_amount: totalAmount,
+                status: 'Pending'
             };
 
-            console.log("Order Placed:", orderData);
-            alert(`Thank you ${name}! Your order from ${currentRestaurantName} has been placed successfully.`);
+            try {
+                // 1. Save order to Supabase Database
+                const { data, error } = await supabaseClient.from('orders').insert([newOrder]).select();
+                if (error) throw error;
 
-            cart = [];
-            currentRestaurantId = null;
-            currentRestaurantName = "";
-            document.getElementById('custName').value = '';
-            document.getElementById('custMobile').value = '';
-            document.getElementById('custAddress').value = '';
-            document.getElementById('custMapLink').value = '';
-            updateCartURL = '';
-            updateCartUI();
-            toggleCart();
-            backToRestaurants();
+                // 2. Push/Trigger Notification to Bot (e.g., Telegram/Webhook endpoint)
+                // Apni ekhane apnar bot backend-er webhook URL dite parben
+                /*
+                await fetch('https://your-bot-webhook-url.com/notify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data[0])
+                });
+                */
+
+                alert(`Thank you ${name}! Your order has been placed successfully and sent to the bot.`);
+
+                // Reset Cart & Form
+                cart = [];
+                currentRestaurantId = null;
+                currentRestaurantName = "";
+                document.getElementById('custName').value = '';
+                document.getElementById('custMobile').value = '';
+                document.getElementById('custAddress').value = '';
+                document.getElementById('custMapLink').value = '';
+                updateCartUI();
+                toggleCart();
+                backToRestaurants();
+
+            } catch (err) {
+                console.error("Order submission failed:", err);
+                alert("Failed to place order. Please try again.");
+            }
         }
 
-        // Initial Load
-        renderBoostedSlider();
-        renderRestaurants(restaurants);
+        // Run on Page Load
+        fetchAppData();
     </script>
 </body>
 </html>
