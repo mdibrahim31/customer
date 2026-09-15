@@ -8,7 +8,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
 const ADMIN_ID = process.env.ADMIN_TELEGRAM_ID;
 const adminSession = {};
-const vendorSession = {};
+const userSession = {}; // To track whether they are registering as vendor or rider
 
 // --- EXPRESS SERVER FOR RENDER PING ---
 const app = express();
@@ -27,6 +27,7 @@ app.listen(PORT, () => {
 bot.start(async (ctx) => {
     const userId = ctx.from.id.toString();
 
+    // 1. Check if Admin
     if (userId === ADMIN_ID) {
         return ctx.reply('👑 *Admin Control Panel*', {
             parse_mode: 'Markdown',
@@ -38,6 +39,7 @@ bot.start(async (ctx) => {
         });
     }
 
+    // 2. Check if Vendor
     const { data: vendorData } = await supabase.from('vendors').select('*').eq('telegram_id', userId).single();
     if (vendorData) {
         return ctx.reply(`🏪 *Vendor Panel (${vendorData.name})*`, {
@@ -49,6 +51,7 @@ bot.start(async (ctx) => {
         });
     }
 
+    // 3. Check if Rider
     const { data: riderData } = await supabase.from('riders').select('*').eq('telegram_id', userId).single();
     if (riderData) {
         return ctx.reply(`🚴 *Rider Panel (${riderData.name})*\nStatus: *${riderData.status}*`, {
@@ -60,7 +63,8 @@ bot.start(async (ctx) => {
         });
     }
 
-    ctx.reply('🍔 *Welcome to FoodHub Bot!*', {
+    // 4. New User Welcome
+    ctx.reply('🍔 *Welcome to FoodHub Bot!*\nPlease choose your role to register:', {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([
             [Markup.button.callback('🚴 Register as Rider', 'rider_register')],
@@ -162,30 +166,36 @@ bot.on('location', async (ctx) => {
 // ================= RIDER & VENDOR REGISTRATION =================
 bot.action('rider_register', async (ctx) => {
     await ctx.answerCbQuery();
-    // Clear any previous conflicting sessions
-    delete vendorSession[ctx.from.id];
-    ctx.reply('To register as rider, share your phone number:', Markup.keyboard([
-        [Markup.button.contactRequest('📱 Share Phone Number')]
-    ]).resize().oneTime());
+    userSession[ctx.from.id] = { role: 'rider' };
+    ctx.reply('To register as a *Rider*, please share your phone number:', {
+        parse_mode: 'Markdown',
+        ...Markup.keyboard([
+            [Markup.button.contactRequest('📱 Share Phone Number')]
+        ]).resize().oneTime()
+    });
 });
 
 bot.action('vendor_register', async (ctx) => {
     await ctx.answerCbQuery();
     const { data: restaurants } = await supabase.from('restaurants').select('id, name');
-    if (!restaurants || restaurants.length === 0) return ctx.reply('No restaurants found in database.');
+    if (!restaurants || restaurants.length === 0) return ctx.reply('No restaurants found in database. Please ask admin to add a restaurant first.');
+    
     let buttons = restaurants.map(res => [Markup.button.callback(res.name, `select_vendor_res_${res.id}`)]);
-    ctx.reply('Select your restaurant:', Markup.inlineKeyboard(buttons));
+    ctx.reply('Select your restaurant for Vendor registration:', Markup.inlineKeyboard(buttons));
 });
 
 bot.action(/select_vendor_res_(\d+)/, async (ctx) => {
     await ctx.answerCbQuery();
-    vendorSession[ctx.from.id] = { type: 'vendor', step: 'phone', resId: ctx.match[1] };
-    ctx.reply('Share your phone number for vendor registration:', Markup.keyboard([
-        [Markup.button.contactRequest('📱 Share Phone Number')]
-    ]).resize().oneTime());
+    userSession[ctx.from.id] = { role: 'vendor', resId: ctx.match[1] };
+    ctx.reply('To complete *Vendor* registration, please share your phone number:', {
+        parse_mode: 'Markdown',
+        ...Markup.keyboard([
+            [Markup.button.contactRequest('📱 Share Phone Number')]
+        ]).resize().oneTime()
+    });
 });
 
-// Vendor/Rider Active Orders & Menus Handlers
+// Panel Actions
 bot.action('vendor_orders', async (ctx) => {
     await ctx.answerCbQuery();
     ctx.reply('📦 Active orders feature coming up next!');
@@ -212,22 +222,42 @@ bot.action('rider_jobs', async (ctx) => {
     ctx.reply('📦 No pending delivery jobs right now.');
 });
 
-// Contact Handler (Fixes state overlap between Vendor and Rider)
+// Contact Handler (Strictly separates Rider and Vendor based on userSession)
 bot.on('contact', async (ctx) => {
     const contact = ctx.message.contact;
     const telegramId = ctx.from.id;
     const name = `${ctx.from.first_name || ''} ${ctx.from.last_name || ''}`.trim();
     const phone = contact.phone_number;
 
-    const vSession = vendorSession[telegramId];
-    if (vSession && vSession.type === 'vendor') {
-        await supabase.from('vendors').upsert([{ telegram_id: telegramId, restaurant_id: vSession.resId, name, phone }], { onConflict: 'telegram_id' });
-        delete vendorSession[telegramId];
-        return ctx.reply('✅ Vendor Registration Successful! Send /start to open panel.', Markup.removeKeyboard());
+    const session = userSession[telegramId];
+
+    if (!session) {
+        return ctx.reply('⚠️ Registration session expired. Please type /start again.', Markup.removeKeyboard());
     }
 
-    await supabase.from('riders').upsert([{ telegram_id: telegramId, name, phone, status: 'Available' }], { onConflict: 'telegram_id' });
-    ctx.reply('✅ Rider Registration Successful! Send /start to access your dashboard.', Markup.removeKeyboard());
+    if (session.role === 'vendor') {
+        await supabase.from('vendors').upsert([{ 
+            telegram_id: telegramId, 
+            restaurant_id: session.resId, 
+            name, 
+            phone 
+        }], { onConflict: 'telegram_id' });
+        
+        delete userSession[telegramId];
+        return ctx.reply('✅ Vendor Registration Successful! Send /start to open your panel.', Markup.removeKeyboard());
+    } 
+    
+    if (session.role === 'rider') {
+        await supabase.from('riders').upsert([{ 
+            telegram_id: telegramId, 
+            name, 
+            phone, 
+            status: 'Available' 
+        }], { onConflict: 'telegram_id' });
+        
+        delete userSession[telegramId];
+        return ctx.reply('✅ Rider Registration Successful! Send /start to access your dashboard.', Markup.removeKeyboard());
+    }
 });
 
 bot.launch();
