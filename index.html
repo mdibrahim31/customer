@@ -79,8 +79,19 @@
             </div>
         </section>
 
-        <!-- Restaurant Categories Scroll Bar -->
+        <!-- Admin Boosted Menus Horizontal Slider Section (Requested Spot) -->
         <section class="max-w-7xl mx-auto px-4 pt-6 pb-2">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-1.5">🔥 Featured & Boosted Deals</h3>
+                <span class="text-xs text-gray-400">Swipe right to left ➔</span>
+            </div>
+            <div id="boostedSliderContainer" class="flex gap-4 overflow-x-auto no-scrollbar pb-3">
+                <!-- Dynamically loaded boosted/discounted items for horizontal scrolling -->
+            </div>
+        </section>
+
+        <!-- Restaurant Categories Scroll Bar -->
+        <section class="max-w-7xl mx-auto px-4 pt-2 pb-2">
             <h3 class="text-lg font-bold text-gray-800 mb-3">Categories</h3>
             <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
                 <button onclick="filterByCategory('all')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border-2 border-orange-500 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
@@ -133,7 +144,7 @@
                 <!-- Dynamic Restaurant Info -->
             </div>
 
-            <!-- Special Discounted Menu Items (Shown at the Top) -->
+            <!-- Special Discounted Menu Items (Shown at the Top inside Restaurant View) -->
             <div id="discountSection" class="mb-10 hidden">
                 <div class="flex items-center gap-2 mb-4">
                     <span class="text-xl">🔥</span>
@@ -216,9 +227,9 @@
                 rating: 4.8,
                 image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80",
                 menu: [
-                    { id: 101, name: "Cheeseburger Deluxe", price: 10.00, discount: 20, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80" }, // 20% discount
-                    { id: 102, name: "Crispy Chicken Burger", price: 7.49, discount: 0, image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=400&q=80" },
-                    { id: 103, name: "French Fries", price: 3.00, discount: 10, image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=400&q=80" } // 10% discount
+                    { id: 101, name: "Cheeseburger Deluxe", price: 10.00, discount: 20, isBoosted: true, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80" }, // Admin Boosted & Discounted
+                    { id: 102, name: "Crispy Chicken Burger", price: 7.49, discount: 0, isBoosted: false, image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=400&q=80" },
+                    { id: 103, name: "French Fries", price: 3.00, discount: 10, isBoosted: true, image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=400&q=80" } // Admin Boosted & Discounted
                 ]
             },
             {
@@ -228,8 +239,8 @@
                 rating: 4.9,
                 image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
                 menu: [
-                    { id: 201, name: "Margherita Pizza", price: 15.00, discount: 30, image: "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?auto=format&fit=crop&w=400&q=80" }, // 30% discount
-                    { id: 202, name: "Pepperoni Feast", price: 15.49, discount: 0, image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=400&q=80" }
+                    { id: 201, name: "Margherita Pizza", price: 15.00, discount: 30, isBoosted: true, image: "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?auto=format&fit=crop&w=400&q=80" }, // Admin Boosted & Discounted
+                    { id: 202, name: "Pepperoni Feast", price: 15.49, discount: 0, isBoosted: false, image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=400&q=80" }
                 ]
             },
             {
@@ -239,8 +250,8 @@
                 rating: 4.7,
                 image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=600&q=80",
                 menu: [
-                    { id: 301, name: "Mutton Kacchi Biryani", price: 12.00, discount: 15, image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=400&q=80" }, // 15% discount
-                    { id: 302, name: "Chicken Roast & Polao", price: 7.99, discount: 0, image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=400&q=80" }
+                    { id: 301, name: "Mutton Kacchi Biryani", price: 12.00, discount: 15, isBoosted: true, image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=400&q=80" }, // Admin Boosted & Discounted
+                    { id: 302, name: "Chicken Roast & Polao", price: 7.99, discount: 0, isBoosted: false, image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=400&q=80" }
                 ]
             },
             {
@@ -250,7 +261,7 @@
                 rating: 4.9,
                 image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80",
                 menu: [
-                    { id: 401, name: "Homestyle Beef Curry & Rice", price: 8.00, discount: 25, image: "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=400&q=80" } // 25% discount
+                    { id: 401, name: "Homestyle Beef Curry & Rice", price: 8.00, discount: 25, isBoosted: true, image: "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=400&q=80" } // Admin Boosted & Discounted
                 ]
             },
             {
@@ -260,7 +271,7 @@
                 rating: 4.6,
                 image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80",
                 menu: [
-                    { id: 501, name: "Ghost Pepper Wings", price: 5.99, discount: 0, image: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=400&q=80" }
+                    { id: 501, name: "Ghost Pepper Wings", price: 5.99, discount: 0, isBoosted: false, image: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=400&q=80" }
                 ]
             }
         ];
@@ -273,6 +284,49 @@
 
         function closeWelcomeModal() {
             document.getElementById('welcomeModal').classList.add('hidden');
+        }
+
+        // Render Admin Boosted Items in Horizontal Slider on Home Page
+        function renderBoostedSlider() {
+            const container = document.getElementById('boostedSliderContainer');
+            container.innerHTML = '';
+            
+            let boostedItems = [];
+            restaurants.forEach(res => {
+                res.menu.forEach(item => {
+                    if (item.isBoosted) {
+                        boostedItems.push({ ...item, resId: res.id, resName: res.name });
+                    }
+                });
+            });
+
+            if (boostedItems.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400">No boosted deals available right now.</p>`;
+                return;
+            }
+
+            boostedItems.forEach(item => {
+                const discountedPrice = item.price - (item.price * item.discount / 100);
+                container.innerHTML += `
+                    <div class="flex-shrink-0 w-72 bg-white rounded-2xl shadow-sm border border-orange-100 overflow-hidden flex flex-col justify-between p-3 relative group">
+                        <span class="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">${item.discount}% OFF</span>
+                        <div class="h-32 w-full rounded-xl overflow-hidden mb-2 cursor-pointer" onclick="openRestaurant(${item.resId})">
+                            <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-orange-500 font-semibold">${item.resName}</span>
+                            <h5 class="font-bold text-sm text-gray-800 truncate">${item.name}</h5>
+                            <div class="flex items-center justify-between mt-2">
+                                <div>
+                                    <span class="text-orange-500 font-bold text-sm">$${discountedPrice.toFixed(2)}</span>
+                                    <span class="text-gray-400 text-xs line-through ml-1">$${item.price.toFixed(2)}</span>
+                                </div>
+                                <button onclick="addToCart(${item.resId}, '${item.resName}', '${item.name}', ${discountedPrice})" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 rounded-lg transition font-medium shadow-sm">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
         }
 
         function renderRestaurants(data) {
@@ -326,7 +380,9 @@
             const res = restaurants.find(r => r.id === id);
 
             document.querySelector('main section.hero-bg').classList.add('hidden');
-            document.querySelector('main section:nth-of-type(2)').classList.add('hidden');
+            // Hide boosted slider and categories when inside restaurant menu view
+            document.querySelector('main section:nth-of-type(2)').classList.add('hidden'); // Boosted slider
+            document.querySelector('main section:nth-of-type(3)').classList.add('hidden'); // Categories
             document.getElementById('restaurantContainer').parentElement.classList.add('hidden');
             
             const menuSection = document.getElementById('menuSection');
@@ -344,9 +400,8 @@
 
             // Separate Discounted and Regular Menu Items
             const discountedItems = res.menu.filter(item => item.discount > 0);
-            const regularItems = res.menu; // Or all items can stay in regular list too
+            const regularItems = res.menu;
 
-            // Render Special Discount Section at the Top
             const discountSection = document.getElementById('discountSection');
             const discountContainer = document.getElementById('discountMenuContainer');
             discountContainer.innerHTML = '';
@@ -374,7 +429,6 @@
                 discountSection.classList.add('hidden');
             }
 
-            // Render All Menu Items
             const menuContainer = document.getElementById('menuContainer');
             menuContainer.innerHTML = '';
             regularItems.forEach(item => {
@@ -401,6 +455,7 @@
         function backToRestaurants() {
             document.querySelector('main section.hero-bg').classList.remove('hidden');
             document.querySelector('main section:nth-of-type(2)').classList.remove('hidden');
+            document.querySelector('main section:nth-of-type(3)').classList.remove('hidden');
             document.getElementById('restaurantContainer').parentElement.classList.remove('hidden');
             document.getElementById('menuSection').classList.add('hidden');
         }
@@ -497,7 +552,7 @@
                 return;
             }
 
-            const name = document.getElementById('custName').value.trim();
+            const name = document.getElementById('custName...').value || document.getElementById('custName').value.trim();
             const mobile = document.getElementById('custMobile').value.trim();
             const address = document.getElementById('custAddress').value.trim();
             const mapLink = document.getElementById('custMapLink').value.trim();
@@ -527,12 +582,14 @@
             document.getElementById('custMobile').value = '';
             document.getElementById('custAddress').value = '';
             document.getElementById('custMapLink').value = '';
+            updateCartURL = '';
             updateCartUI();
             toggleCart();
             backToRestaurants();
         }
 
         // Initial Load
+        renderBoostedSlider();
         renderRestaurants(restaurants);
     </script>
 </body>
