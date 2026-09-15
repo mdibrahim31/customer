@@ -26,7 +26,7 @@
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between">
 
-    <!-- Custom Restaurant Replace Confirmation Modal -->
+    <!-- Custom Restaurant Switch Confirmation Modal -->
     <div id="customConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl animate-fade-in">
             <div class="w-16 h-16 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">🛒</div>
@@ -76,9 +76,7 @@
                 <h3 class="text-lg font-bold text-gray-800 flex items-center gap-1.5">🔥 Featured & Boosted Deals</h3>
                 <span class="text-xs text-gray-400">Swipe right to left ➔</span>
             </div>
-            <div id="boostedSliderContainer" class="flex gap-4 overflow-x-auto no-scrollbar pb-3">
-                <!-- Dynamically loaded from database -->
-            </div>
+            <div id="boostedSliderContainer" class="flex gap-4 overflow-x-auto no-scrollbar pb-3"></div>
         </section>
 
         <!-- Restaurant Categories Scroll Bar -->
@@ -113,12 +111,10 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold text-gray-800">Featured Restaurants</h3>
             </div>
-            <div id="restaurantContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Loaded dynamically from database -->
-            </div>
+            <div id="restaurantContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
 
-        <!-- Menu View Section (Hidden by default) -->
+        <!-- Menu View Section -->
         <section id="menuSection" class="max-w-7xl mx-auto px-4 py-12 hidden">
             <button onclick="backToRestaurants()" class="mb-6 flex items-center gap-2 text-orange-500 font-semibold hover:underline">
                 <i data-lucide="arrow-left" class="w-5 h-5"></i> Back to Restaurants
@@ -181,11 +177,10 @@
         <p>&copy; 2026 FoodHub. All rights reserved.</p>
     </footer>
 
-    <!-- JavaScript Application & Supabase Integration -->
+    <!-- JavaScript Application Logic -->
     <script>
         lucide.createIcons();
 
-        // Initialize Supabase Client (Apnar credentials ekhane din)
         const SUPABASE_URL = 'YOUR_SUPABASE_URL';
         const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -197,24 +192,18 @@
         let pendingItem = null;
         let selectedCategory = "all";
 
-        // Fetch Data from Supabase Database on Load
         async function fetchAppData() {
             try {
-                // Fetch Restaurants
                 const { data: resData, error: resError } = await supabaseClient.from('restaurants').select('*');
                 if (resError) throw resError;
 
-                // Fetch Menus with Restaurant Info
                 const { data: menuData, error: menuError } = await supabaseClient.from('menus').select('*, restaurants(name)');
                 if (menuError) throw menuError;
 
-                // Structure data properly
-                restaurants = resData.map(res => {
-                    return {
-                        ...res,
-                        menu: menuData.filter(m => m.restaurant_id === res.id)
-                    };
-                });
+                restaurants = resData.map(res => ({
+                    ...res,
+                    menu: menuData.filter(m => m.restaurant_id === res.id)
+                }));
 
                 renderBoostedSlider();
                 renderRestaurants(restaurants);
@@ -223,7 +212,6 @@
             }
         }
 
-        // Render Admin Boosted Items in Horizontal Slider
         function renderBoostedSlider() {
             const container = document.getElementById('boostedSliderContainer');
             container.innerHTML = '';
@@ -270,7 +258,7 @@
             const container = document.getElementById('restaurantContainer');
             container.innerHTML = '';
             if(data.length === 0) {
-                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found in database.</p>`;
+                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found in database. Please add via Telegram Bot.</p>`;
                 return;
             }
             data.forEach(res => {
@@ -456,7 +444,6 @@
             document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
         }
 
-        // Place Order: Save to Supabase 'orders' table & trigger Bot notification
         async function placeOrder() {
             if(cart.length === 0) {
                 alert("Your cart is empty!");
@@ -487,23 +474,11 @@
             };
 
             try {
-                // 1. Save order to Supabase Database
                 const { data, error } = await supabaseClient.from('orders').insert([newOrder]).select();
                 if (error) throw error;
 
-                // 2. Push/Trigger Notification to Bot (e.g., Telegram/Webhook endpoint)
-                // Apni ekhane apnar bot backend-er webhook URL dite parben
-                /*
-                await fetch('https://your-bot-webhook-url.com/notify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data[0])
-                });
-                */
+                alert(`Thank you ${name}! Your order has been placed successfully.`);
 
-                alert(`Thank you ${name}! Your order has been placed successfully and sent to the bot.`);
-
-                // Reset Cart & Form
                 cart = [];
                 currentRestaurantId = null;
                 currentRestaurantName = "";
@@ -514,14 +489,12 @@
                 updateCartUI();
                 toggleCart();
                 backToRestaurants();
-
             } catch (err) {
                 console.error("Order submission failed:", err);
                 alert("Failed to place order. Please try again.");
             }
         }
 
-        // Run on Page Load
         fetchAppData();
     </script>
 </body>
