@@ -19,6 +19,8 @@
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80');
             background-size: cover; background-position: center;
         }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between">
@@ -33,7 +35,7 @@
         </div>
     </div>
 
-    <!-- Custom Restaurant Replace Confirmation Modal (Matching Welcome Modal Style) -->
+    <!-- Custom Restaurant Replace Confirmation Modal -->
     <div id="customConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl animate-fade-in">
             <div class="w-16 h-16 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">🛒</div>
@@ -65,29 +67,55 @@
     <!-- Main Content -->
     <main class="flex-grow">
         <!-- Hero Section -->
-        <section class="hero-bg text-white py-20 px-4 text-center">
+        <section class="hero-bg text-white py-16 px-4 text-center">
             <div class="max-w-3xl mx-auto animate-fade-in">
-                <h2 class="text-4xl md:text-5xl font-bold mb-4">Delicious Food, Delivered Fast</h2>
-                <p class="text-lg text-gray-200 mb-8">Explore top-rated restaurants and categories right at your fingertips.</p>
-                <!-- Search & Filters -->
-                <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                    <div class="relative flex-grow max-w-md">
-                        <i data-lucide="search" class="absolute left-4 top-3.5 text-gray-400 w-5 h-5"></i>
-                        <input type="text" id="searchInput" oninput="filterData()" placeholder="Search restaurants or food items..." class="w-full pl-12 pr-4 py-3 rounded-xl text-gray-800 bg-white focus:outline-none shadow-md">
-                    </div>
-                    <select id="categoryFilter" onchange="filterData()" class="px-4 py-3 rounded-xl text-gray-800 bg-white focus:outline-none shadow-md font-medium">
-                        <option value="all">All Categories</option>
-                        <option value="Fast Food">Fast Food</option>
-                        <option value="Italian">Italian</option>
-                        <option value="Desi">Desi / Local</option>
-                        <option value="Dessert">Dessert</option>
-                    </select>
+                <h2 class="text-3xl md:text-4xl font-bold mb-3">Delicious Food, Delivered Fast</h2>
+                <p class="text-base text-gray-200 mb-6">Explore top-rated restaurants and categories right at your fingertips.</p>
+                <!-- Search Box -->
+                <div class="relative max-w-xl mx-auto">
+                    <i data-lucide="search" class="absolute left-4 top-3.5 text-gray-400 w-5 h-5"></i>
+                    <input type="text" id="searchInput" oninput="filterData()" placeholder="Search restaurants or food items..." class="w-full pl-12 pr-4 py-3 rounded-xl text-gray-800 bg-white focus:outline-none shadow-md">
                 </div>
             </div>
         </section>
 
+        <!-- Restaurant Categories Scroll Bar -->
+        <section class="max-w-7xl mx-auto px-4 pt-6 pb-2">
+            <h3 class="text-lg font-bold text-gray-800 mb-3">Categories</h3>
+            <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                <button onclick="filterByCategory('all')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border-2 border-orange-500 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
+                    <span class="text-2xl mb-1">🍽️</span>
+                    <span class="text-xs font-semibold text-gray-700">All</span>
+                </button>
+                <button onclick="filterByCategory('Fast Food')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border border-gray-100 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
+                    <span class="text-2xl mb-1">🍔</span>
+                    <span class="text-xs font-semibold text-gray-700">Fast Food</span>
+                </button>
+                <button onclick="filterByCategory('Italian')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border border-gray-100 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
+                    <span class="text-2xl mb-1">🍕</span>
+                    <span class="text-xs font-semibold text-gray-700">Italian</span>
+                </button>
+                <button onclick="filterByCategory('Desi')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border border-gray-100 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
+                    <span class="text-2xl mb-1">🍛</span>
+                    <span class="text-xs font-semibold text-gray-700">Desi / Local</span>
+                </button>
+                <button onclick="filterByCategory('Home Kitchen')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border border-gray-100 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
+                    <span class="text-2xl mb-1">🏡</span>
+                    <span class="text-xs font-semibold text-gray-700">Home Kitchen</span>
+                </button>
+                <button onclick="filterByCategory('Cloud Kitchen')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border border-gray-100 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
+                    <span class="text-2xl mb-1">☁️</span>
+                    <span class="text-xs font-semibold text-gray-700">Cloud Kitchen</span>
+                </button>
+                <button onclick="filterByCategory('Snacks')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border border-gray-100 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
+                    <span class="text-2xl mb-1">🍟</span>
+                    <span class="text-xs font-semibold text-gray-700">Snacks</span>
+                </button>
+            </div>
+        </section>
+
         <!-- Restaurants List Section -->
-        <section class="max-w-7xl mx-auto px-4 py-12">
+        <section class="max-w-7xl mx-auto px-4 py-8">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold text-gray-800">Featured Restaurants</h3>
             </div>
@@ -104,7 +132,19 @@
             <div id="restaurantHeader" class="bg-white p-6 rounded-2xl shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
                 <!-- Dynamic Restaurant Info -->
             </div>
-            <h4 class="text-xl font-bold mb-6">Menu Items</h4>
+
+            <!-- Special Discounted Menu Items (Shown at the Top) -->
+            <div id="discountSection" class="mb-10 hidden">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="text-xl">🔥</span>
+                    <h4 class="text-xl font-bold text-gray-800">Special Discount Offers</h4>
+                </div>
+                <div id="discountMenuContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamic Discount Items -->
+                </div>
+            </div>
+
+            <h4 class="text-xl font-bold mb-6">All Menu Items</h4>
             <div id="menuContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Dynamic Menu Items -->
             </div>
@@ -176,9 +216,9 @@
                 rating: 4.8,
                 image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80",
                 menu: [
-                    { id: 101, name: "Cheeseburger Deluxe", price: 8.99, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80" },
-                    { id: 102, name: "Crispy Chicken Burger", price: 7.49, image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=400&q=80" },
-                    { id: 103, name: "French Fries", price: 3.00, image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=400&q=80" }
+                    { id: 101, name: "Cheeseburger Deluxe", price: 10.00, discount: 20, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80" }, // 20% discount
+                    { id: 102, name: "Crispy Chicken Burger", price: 7.49, discount: 0, image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=400&q=80" },
+                    { id: 103, name: "French Fries", price: 3.00, discount: 10, image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=400&q=80" } // 10% discount
                 ]
             },
             {
@@ -188,8 +228,8 @@
                 rating: 4.9,
                 image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
                 menu: [
-                    { id: 201, name: "Margherita Pizza", price: 12.99, image: "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?auto=format&fit=crop&w=400&q=80" },
-                    { id: 202, name: "Pepperoni Feast", price: 15.49, image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=400&q=80" }
+                    { id: 201, name: "Margherita Pizza", price: 15.00, discount: 30, image: "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?auto=format&fit=crop&w=400&q=80" }, // 30% discount
+                    { id: 202, name: "Pepperoni Feast", price: 15.49, discount: 0, image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=400&q=80" }
                 ]
             },
             {
@@ -199,8 +239,28 @@
                 rating: 4.7,
                 image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=600&q=80",
                 menu: [
-                    { id: 301, name: "Mutton Kacchi Biryani", price: 9.50, image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=400&q=80" },
-                    { id: 302, name: "Chicken Roast & Polao", price: 7.99, image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=400&q=80" }
+                    { id: 301, name: "Mutton Kacchi Biryani", price: 12.00, discount: 15, image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=400&q=80" }, // 15% discount
+                    { id: 302, name: "Chicken Roast & Polao", price: 7.99, discount: 0, image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=400&q=80" }
+                ]
+            },
+            {
+                id: 4,
+                name: "Auntie's Home Kitchen",
+                category: "Home Kitchen",
+                rating: 4.9,
+                image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80",
+                menu: [
+                    { id: 401, name: "Homestyle Beef Curry & Rice", price: 8.00, discount: 25, image: "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=400&q=80" } // 25% discount
+                ]
+            },
+            {
+                id: 5,
+                name: "ByteBite Cloud Kitchen",
+                category: "Cloud Kitchen",
+                rating: 4.6,
+                image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80",
+                menu: [
+                    { id: 501, name: "Ghost Pepper Wings", price: 5.99, discount: 0, image: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=400&q=80" }
                 ]
             }
         ];
@@ -209,6 +269,7 @@
         let currentRestaurantId = null;
         let currentRestaurantName = "";
         let pendingItem = null;
+        let selectedCategory = "all";
 
         function closeWelcomeModal() {
             document.getElementById('welcomeModal').classList.add('hidden');
@@ -218,7 +279,7 @@
             const container = document.getElementById('restaurantContainer');
             container.innerHTML = '';
             if(data.length === 0) {
-                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found.</p>`;
+                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found in this category.</p>`;
                 return;
             }
             data.forEach(res => {
@@ -240,12 +301,21 @@
             lucide.createIcons();
         }
 
+        function filterByCategory(category) {
+            selectedCategory = category;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('border-orange-500', 'border-2');
+                btn.classList.add('border-gray-100');
+            });
+            event.currentTarget.classList.remove('border-gray-100');
+            event.currentTarget.classList.add('border-orange-500', 'border-2');
+            filterData();
+        }
+
         function filterData() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const category = document.getElementById('categoryFilter').value;
-
             const filtered = restaurants.filter(res => {
-                const matchesCategory = category === 'all' || res.category === category;
+                const matchesCategory = selectedCategory === 'all' || res.category === selectedCategory;
                 const matchesSearch = res.name.toLowerCase().includes(query) || res.menu.some(m => m.name.toLowerCase().includes(query));
                 return matchesCategory && matchesSearch;
             });
@@ -256,6 +326,7 @@
             const res = restaurants.find(r => r.id === id);
 
             document.querySelector('main section.hero-bg').classList.add('hidden');
+            document.querySelector('main section:nth-of-type(2)').classList.add('hidden');
             document.getElementById('restaurantContainer').parentElement.classList.add('hidden');
             
             const menuSection = document.getElementById('menuSection');
@@ -271,16 +342,56 @@
                 </div>
             `;
 
+            // Separate Discounted and Regular Menu Items
+            const discountedItems = res.menu.filter(item => item.discount > 0);
+            const regularItems = res.menu; // Or all items can stay in regular list too
+
+            // Render Special Discount Section at the Top
+            const discountSection = document.getElementById('discountSection');
+            const discountContainer = document.getElementById('discountMenuContainer');
+            discountContainer.innerHTML = '';
+
+            if(discountedItems.length > 0) {
+                discountSection.classList.remove('hidden');
+                discountedItems.forEach(item => {
+                    const discountedPrice = item.price - (item.price * item.discount / 100);
+                    discountContainer.innerHTML += `
+                        <div class="bg-white p-4 rounded-2xl shadow-md border-2 border-orange-200 flex items-center gap-4 relative overflow-hidden">
+                            <span class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${item.discount}% OFF</span>
+                            <img src="${item.image}" class="w-24 h-24 rounded-xl object-cover">
+                            <div class="flex-grow">
+                                <h5 class="font-bold text-gray-800">${item.name}</h5>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-orange-500 font-bold">$${discountedPrice.toFixed(2)}</span>
+                                    <span class="text-gray-400 text-xs line-through">$${item.price.toFixed(2)}</span>
+                                </div>
+                                <button onclick="addToCart(${res.id}, '${res.name}', '${item.name}', ${discountedPrice})" class="mt-2 bg-orange-500 hover:bg-orange-600 text-white text-xs px-4 py-2 rounded-lg transition font-medium shadow-sm">Add to Cart</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                discountSection.classList.add('hidden');
+            }
+
+            // Render All Menu Items
             const menuContainer = document.getElementById('menuContainer');
             menuContainer.innerHTML = '';
-            res.menu.forEach(item => {
+            regularItems.forEach(item => {
+                const hasDiscount = item.discount > 0;
+                const finalPrice = hasDiscount ? item.price - (item.price * item.discount / 100) : item.price;
+                
                 menuContainer.innerHTML += `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-4">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-4 relative">
+                        ${hasDiscount ? `<span class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${item.discount}% OFF</span>` : ''}
                         <img src="${item.image}" class="w-24 h-24 rounded-xl object-cover">
                         <div class="flex-grow">
                             <h5 class="font-bold text-gray-800">${item.name}</h5>
-                            <p class="text-orange-500 font-semibold mt-1">$${item.price.toFixed(2)}</p>
-                            <button onclick="addToCart(${res.id}, '${res.name}', '${item.name}', ${item.price})" class="mt-2 bg-orange-500 hover:bg-orange-600 text-white text-xs px-4 py-2 rounded-lg transition font-medium">Add to Cart</button>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-orange-500 font-semibold">$${finalPrice.toFixed(2)}</span>
+                                ${hasDiscount ? `<span class="text-gray-400 text-xs line-through">$${item.price.toFixed(2)}</span>` : ''}
+                            </div>
+                            <button onclick="addToCart(${res.id}, '${res.name}', '${item.name}', ${finalPrice})" class="mt-2 bg-orange-500 hover:bg-orange-600 text-white text-xs px-4 py-2 rounded-lg transition font-medium">Add to Cart</button>
                         </div>
                     </div>
                 `;
@@ -289,6 +400,7 @@
 
         function backToRestaurants() {
             document.querySelector('main section.hero-bg').classList.remove('hidden');
+            document.querySelector('main section:nth-of-type(2)').classList.remove('hidden');
             document.getElementById('restaurantContainer').parentElement.classList.remove('hidden');
             document.getElementById('menuSection').classList.add('hidden');
         }
@@ -325,7 +437,7 @@
         function closeCustomConfirm(isConfirmed) {
             document.getElementById('customConfirmModal').classList.add('hidden');
             if(isConfirmed && pendingItem) {
-                cart = []; // Clear old cart
+                cart = [];
                 executeAddToCart(pendingItem.resId, pendingItem.resName, pendingItem.itemName, pendingItem.itemPrice);
             }
             pendingItem = null;
@@ -366,7 +478,7 @@
                     <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl gap-2">
                         <div class="flex-grow">
                             <h6 class="font-semibold text-sm">${item.name}</h6>
-                            <p class="text-xs text-orange-500 font-medium">$${item.price} x ${item.qty} = $${(item.price * item.qty).toFixed(2)}</p>
+                            <p class="text-xs text-orange-500 font-medium">$${item.price.toFixed(2)} x ${item.qty} = $${(item.price * item.qty).toFixed(2)}</p>
                         </div>
                         <div class="flex items-center gap-2 bg-white border px-2 py-1 rounded-lg">
                             <button onclick="updateQuantity(${index}, -1)" class="text-gray-500 hover:text-black font-bold px-1">-</button>
@@ -408,7 +520,6 @@
             console.log("Order Placed:", orderData);
             alert(`Thank you ${name}! Your order from ${currentRestaurantName} has been placed successfully.`);
 
-            // Reset cart & form
             cart = [];
             currentRestaurantId = null;
             currentRestaurantName = "";
@@ -426,4 +537,3 @@
     </script>
 </body>
 </html>
-
