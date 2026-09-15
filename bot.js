@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { Telegraf, Markup } = require('telegraf');
 const { createClient } = require('@supabase/supabase-js');
-const express = require('express'); // Express added for UptimeRobot ping
+const express = require('express');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
@@ -10,7 +10,7 @@ const ADMIN_ID = process.env.ADMIN_TELEGRAM_ID;
 const adminSession = {};
 const vendorSession = {};
 
-// --- EXPRESS SERVER FOR RENDER & UPTIMEROBOT PING ---
+// --- EXPRESS SERVER FOR RENDER PING ---
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Keep-alive web server is running on port ${PORT}`);
 });
-// ----------------------------------------------------
+// ------------------------------------
 
 // --- START COMMAND ---
 bot.start(async (ctx) => {
@@ -70,13 +70,15 @@ bot.start(async (ctx) => {
 });
 
 // ================= ADMIN WORKFLOW =================
-bot.action('admin_add_res', (ctx) => {
+bot.action('admin_add_res', async (ctx) => {
+    await ctx.answerCbQuery();
     if (ctx.from.id.toString() !== ADMIN_ID) return ctx.reply('Unauthorized!');
     adminSession[ctx.from.id] = { step: 'res_name' };
     ctx.reply('Enter Restaurant Name:');
 });
 
 bot.action('admin_add_menu', async (ctx) => {
+    await ctx.answerCbQuery();
     if (ctx.from.id.toString() !== ADMIN_ID) return ctx.reply('Unauthorized!');
     const { data: restaurants } = await supabase.from('restaurants').select('id, name');
     if (!restaurants || restaurants.length === 0) return ctx.reply('Please add a restaurant first!');
@@ -85,7 +87,8 @@ bot.action('admin_add_menu', async (ctx) => {
     ctx.reply('Select Restaurant to add menu item:', Markup.inlineKeyboard(buttons));
 });
 
-bot.action(/admin_menu_res_(\d+)/, (ctx) => {
+bot.action(/admin_menu_res_(\d+)/, async (ctx) => {
+    await ctx.answerCbQuery();
     adminSession[ctx.from.id] = { step: 'menu_name', resId: ctx.match[1] };
     ctx.reply('Enter Menu Item Name:');
 });
@@ -157,26 +160,59 @@ bot.on('location', async (ctx) => {
 });
 
 // ================= RIDER & VENDOR REGISTRATION =================
-bot.action('rider_register', (ctx) => {
+bot.action('rider_register', async (ctx) => {
+    await ctx.answerCbQuery();
+    // Clear any previous conflicting sessions
+    delete vendorSession[ctx.from.id];
     ctx.reply('To register as rider, share your phone number:', Markup.keyboard([
         [Markup.button.contactRequest('📱 Share Phone Number')]
     ]).resize().oneTime());
 });
 
 bot.action('vendor_register', async (ctx) => {
+    await ctx.answerCbQuery();
     const { data: restaurants } = await supabase.from('restaurants').select('id, name');
-    if (!restaurants || restaurants.length === 0) return ctx.reply('No restaurants found.');
+    if (!restaurants || restaurants.length === 0) return ctx.reply('No restaurants found in database.');
     let buttons = restaurants.map(res => [Markup.button.callback(res.name, `select_vendor_res_${res.id}`)]);
     ctx.reply('Select your restaurant:', Markup.inlineKeyboard(buttons));
 });
 
-bot.action(/select_vendor_res_(\d+)/, (ctx) => {
-    vendorSession[ctx.from.id] = { step: 'phone', resId: ctx.match[1] };
+bot.action(/select_vendor_res_(\d+)/, async (ctx) => {
+    await ctx.answerCbQuery();
+    vendorSession[ctx.from.id] = { type: 'vendor', step: 'phone', resId: ctx.match[1] };
     ctx.reply('Share your phone number for vendor registration:', Markup.keyboard([
         [Markup.button.contactRequest('📱 Share Phone Number')]
     ]).resize().oneTime());
 });
 
+// Vendor/Rider Active Orders & Menus Handlers
+bot.action('vendor_orders', async (ctx) => {
+    await ctx.answerCbQuery();
+    ctx.reply('📦 Active orders feature coming up next!');
+});
+
+bot.action('vendor_menus', async (ctx) => {
+    await ctx.answerCbQuery();
+    ctx.reply('🍔 Menu management feature coming up next!');
+});
+
+bot.action('rider_toggle_status', async (ctx) => {
+    await ctx.answerCbQuery();
+    const userId = ctx.from.id;
+    const { data: rider } = await supabase.from('riders').select('status').eq('telegram_id', userId).single();
+    if(rider) {
+        const newStatus = rider.status === 'Available' ? 'Offline' : 'Available';
+        await supabase.from('riders').update({ status: newStatus }).eq('telegram_id', userId);
+        ctx.reply(`✅ Your status has been updated to: *${newStatus}*`, { parse_mode: 'Markdown' });
+    }
+});
+
+bot.action('rider_jobs', async (ctx) => {
+    await ctx.answerCbQuery();
+    ctx.reply('📦 No pending delivery jobs right now.');
+});
+
+// Contact Handler (Fixes state overlap between Vendor and Rider)
 bot.on('contact', async (ctx) => {
     const contact = ctx.message.contact;
     const telegramId = ctx.from.id;
@@ -184,15 +220,15 @@ bot.on('contact', async (ctx) => {
     const phone = contact.phone_number;
 
     const vSession = vendorSession[telegramId];
-    if (vSession && vSession.step === 'phone') {
-        await supabase.from('vendors').insert([{ telegram_id: telegramId, restaurant_id: vSession.resId, name, phone }]);
+    if (vSession && vSession.type === 'vendor') {
+        await supabase.from('vendors').upsert([{ telegram_id: telegramId, restaurant_id: vSession.resId, name, phone }], { onConflict: 'telegram_id' });
         delete vendorSession[telegramId];
-        return ctx.reply('✅ Vendor Registration Successful!', Markup.removeKeyboard());
+        return ctx.reply('✅ Vendor Registration Successful! Send /start to open panel.', Markup.removeKeyboard());
     }
 
     await supabase.from('riders').upsert([{ telegram_id: telegramId, name, phone, status: 'Available' }], { onConflict: 'telegram_id' });
-    ctx.reply('✅ Rider Registration Successful!', Markup.removeKeyboard());
+    ctx.reply('✅ Rider Registration Successful! Send /start to access your dashboard.', Markup.removeKeyboard());
 });
 
 bot.launch();
-console.log('FoodHub Telegram Bot & Express Server running...');
+console.log('FoodHub Telegram Bot & Express Server running smoothly...');
