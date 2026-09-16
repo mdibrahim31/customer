@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodHub - Order Delicious Food</title>
+    <!-- Supabase JS & Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- Navigation Header -->
+    <header>
+        <div>
+            <h1 onclick="backToRestaurants()">
+                <i data-lucide="utensils"></i> FoodHub
+            </h1>
+            <div>
+                <button onclick="toggleCart()">
+                    <i data-lucide="shopping-bag"></i>
+                    <span>Cart</span>
+                    <span id="cartCount">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Views Container -->
+    <main>
+        <!-- Hero Section -->
+        <section>
+            <div>
+                <h2>Delicious Food, Delivered Fast</h2>
+                <p>Discover top-rated restaurants and menu items near you.</p>
+                <div>
+                    <div>
+                        <i data-lucide="search"></i>
+                        <input type="text" id="searchInput" oninput="filterData()" placeholder="Search restaurants or items...">
+                    </div>
+                    <select id="categoryFilter" onchange="filterData()">
+                        <option value="all">All Categories</option>
+                        <option value="Fast Food">Fast Food</option>
+                        <option value="Italian">Italian</option>
+                        <option value="Desi">Desi / Local</option>
+                        <option value="Dessert">Dessert</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Restaurants Grid -->
+        <section id="restaurantSection">
+            <h3>Available Restaurants</h3>
+            <div id="restaurantContainer">
+                <!-- Loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- Menu View (Hidden initially) -->
+        <section id="menuSection" class="hidden">
+            <button onclick="backToRestaurants()">
+                <i data-lucide="arrow-left"></i> Back to Restaurants
+            </button>
+            <div id="restaurantHeader"></div>
+            <h4>Menu Items</h4>
+            <div id="menuContainer"></div>
+        </section>
+    </main>
+
+    <!-- Slide-over Cart Drawer -->
+    <div id="cartDrawer" class="hidden">
+        <div>
+            <div>
+                <h3><i data-lucide="shopping-cart"></i> Your Cart</h3>
+                <button onclick="toggleCart()"><i data-lucide="x"></i></button>
+            </div>
+            <div id="cartItems"></div>
+            <!-- Checkout Form Details -->
+            <div>
+                <input type="text" id="custName" placeholder="Your Full Name">
+                <input type="text" id="custMobile" placeholder="Mobile Number">
+                <input type="text" id="custAddress" placeholder="Delivery Address">
+            </div>
+        </div>
+        <div>
+            <div>
+                <span>Total:</span>
+                <span id="cartTotal">$0.00</span>
+            </div>
+            <button onclick="placeOrder()">Place Order</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 FoodHub. All rights reserved.</p>
+    </footer>
+
+    <!-- Script Application Logic -->
+    <script>
+        const SUPABASE_URL = 'https://kdqyompkfmnocpihfzdj.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkcXlvbXBrZm1ub2NwaWhmemRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzMDkxOTIsImV4cCI6MjEwNDg4NTE5Mn0.4gmwMruyf54ZdXAADEAa9noLZD5JMFyLOzrszUIMVns';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let restaurants = [];
+        let cart = [];
+
+        lucide.createIcons();
+
+        async function fetchAppData() {
+            try {
+                const { data: resData, error: resError } = await supabaseClient.from('restaurants').select('*');
+                if (resError) throw resError;
+
+                const { data: menuData, error: menuError } = await supabaseClient.from('menus').select('*');
+                if (menuError) throw menuError;
+
+                restaurants = (resData || []).map(res => ({
+                    id: res.id,
+                    name: res.name,
+                    category: res.category || 'Fast Food',
+                    image: res.image || 'https://images.unsplash.com/photo-1552566626-52f8b828add9',
+                    rating: res.rating || 5.0,
+                    menu: (menuData || []).filter(m => m.restaurant_id == res.id || m.restaurant_name === res.name)
+                }));
+
+                renderRestaurants(restaurants);
+            } catch (err) {
+                console.error("Error loading app data:", err);
+            }
+        }
+
+        function renderRestaurants(data) {
+            const container = document.getElementById('restaurantContainer');
+            container.innerHTML = '';
+            if(data.length === 0) {
+                container.innerHTML = `<p>No restaurants found right now.</p>`;
+                return;
+            }
+            data.forEach(res => {
+                container.innerHTML += `
+                    <div onclick="openRestaurant(${res.id})">
+                        <div>
+                            <img src="${res.image}" alt="${res.name}">
+                        </div>
+                        <div>
+                            <span>${res.category}</span>
+                            <h4>${res.name}</h4>
+                            <div>
+                                <i data-lucide="star"></i> ${res.rating} • ${res.menu.length} items
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function filterData() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+
+            const filtered = restaurants.filter(res => {
+                const matchesCategory = category === 'all' || res.category === category;
+                const matchesSearch = res.name.toLowerCase().includes(query) || res.menu.some(m => m.name.toLowerCase().includes(query));
+                return matchesCategory && matchesSearch;
+            });
+            renderRestaurants(filtered);
+        }
+
+        function openRestaurant(id) {
+            const res = restaurants.find(r => r.id === id);
+            document.getElementById('restaurantSection').classList.add('hidden');
+            document.querySelector('section').classList.add('hidden');
+            
+            const menuSection = document.getElementById('menuSection');
+            menuSection.classList.remove('hidden');
+
+            document.getElementById('restaurantHeader').innerHTML = `
+                <img src="${res.image}">
+                <div>
+                    <h3>${res.name}</h3>
+                    <p>${res.category} • ⭐ ${res.rating}</p>
+                </div>
+            `;
+
+            const menuContainer = document.getElementById('menuContainer');
+            menuContainer.innerHTML = '';
+            if(res.menu.length === 0) {
+                menuContainer.innerHTML = `<p>No menu items added for this restaurant yet.</p>`;
+                return;
+            }
+
+            res.menu.forEach(item => {
+                menuContainer.innerHTML += `
+                    <div>
+                        <img src="${item.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}">
+                        <div>
+                            <h5>${item.name}</h5>
+                            <p>$${parseFloat(item.price).toFixed(2)}</p>
+                            <button onclick="addToCart('${item.name}', ${item.price})">Add to Cart</button>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function backToRestaurants() {
+            document.getElementById('restaurantSection').classList.remove('hidden');
+            document.querySelector('section').classList.remove('hidden');
+            document.getElementById('menuSection').classList.add('hidden');
+        }
+
+        function toggleCart() {
+            document.getElementById('cartDrawer').classList.toggle('hidden');
+        }
+
+        function addToCart(name, price) {
+            const existing = cart.find(item => item.name === name);
+            if(existing) { existing.qty++; } 
+            else { cart.push({ name, price, qty: 1 }); }
+            updateCartUI();
+            toggleCart();
+        }
+
+        function updateCartUI() {
+            document.getElementById('cartCount').innerText = cart.reduce((sum, item) => sum + item.qty, 0);
+            const container = document.getElementById('cartItems');
+            container.innerHTML = '';
+            let total = 0;
+
+            if(cart.length === 0) {
+                container.innerHTML = `<p>Your cart is empty.</p>`;
+            }
+
+            cart.forEach((item, index) => {
+                total += item.price * item.qty;
+                container.innerHTML += `
+                    <div>
+                        <div>
+                            <h6>${item.name}</h6>
+                            <p>$${item.price} x ${item.qty}</p>
+                        </div>
+                        <button onclick="cart.splice(${index},1); updateCartUI();">Remove</button>
+                    </div>
+                `;
+            });
+            document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
+        }
+
+        async function placeOrder() {
+            if(cart.length === 0) { alert("Cart is empty!"); return; }
+            const name = document.getElementById('custName').value;
+            const mobile = document.getElementById('custMobile').value;
+            const address = document.getElementById('custAddress').value;
+
+            if(!name || !mobile || !address) { alert("Please fill up all contact details in cart!"); return; }
+
+            const total_amount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+            const { error } = await supabaseClient.from('orders').insert([{
+                customer_name: name,
+                mobile: mobile,
+                address: address,
+                items: cart,
+                total_amount: total_amount,
+                restaurant_name: "FoodHub Online Order"
+            }]);
+
+            if(error) {
+                alert("Error placing order: " + error.message);
+            } else {
+                alert("Order placed successfully!");
+                cart = [];
+                updateCartUI();
+                toggleCart();
+            }
+        }
+
+        fetchAppData();
+    </script>
+</body>
+</html>
+
