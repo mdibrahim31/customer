@@ -3,41 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FoodHub - Live Database Ordering</title>
-    <!-- Google Fonts & Tailwind CSS -->
+    <title>FoodHub - Order Delicious Food</title>
+    <!-- Google Fonts, Tailwind CSS & Supabase JS -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Poppins', sans-serif; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
         .hero-bg {
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80');
             background-size: cover; background-position: center;
         }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between">
-
-    <!-- Custom Restaurant Switch Confirmation Modal -->
-    <div id="customConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
-        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl animate-fade-in">
-            <div class="w-16 h-16 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">🛒</div>
-            <h2 class="text-2xl font-bold mb-2 text-gray-800">Switch Restaurant?</h2>
-            <p id="confirmModalText" class="text-gray-600 mb-6 text-sm leading-relaxed">Your cart contains items from another restaurant. Do you want to clear your cart and add items from this restaurant?</p>
-            <div class="flex gap-3">
-                <button onclick="closeCustomConfirm(false)" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition shadow-sm">Cancel</button>
-                <button onclick="closeCustomConfirm(true)" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-orange-500/30">OK</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Navigation Header -->
     <header class="bg-white shadow-sm sticky top-0 z-30">
@@ -45,82 +30,53 @@
             <h1 class="text-2xl font-bold text-orange-500 flex items-center gap-2 cursor-pointer" onclick="backToRestaurants()">
                 <i data-lucide="utensils"></i> FoodHub
             </h1>
-            <div class="flex items-center gap-4">
-                <button onclick="toggleCart()" class="relative bg-orange-50 hover:bg-orange-100 text-orange-600 p-2.5 rounded-xl transition flex items-center gap-2 font-medium">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleCart()" class="relative bg-orange-50 hover:bg-orange-100 text-orange-600 px-4 py-2.5 rounded-xl transition flex items-center gap-2 font-medium">
                     <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-                    <span class="hidden sm:inline">Cart</span>
+                    <span>Cart</span>
                     <span id="cartCount" class="bg-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- Main Views Container -->
     <main class="flex-grow">
         <!-- Hero Section -->
         <section class="hero-bg text-white py-16 px-4 text-center">
-            <div class="max-w-3xl mx-auto animate-fade-in">
-                <h2 class="text-3xl md:text-4xl font-bold mb-3">Delicious Food, Delivered Fast</h2>
-                <p class="text-base text-gray-200 mb-6">Explore top-rated restaurants and categories right at your fingertips.</p>
-                <!-- Search Box -->
-                <div class="relative max-w-xl mx-auto">
-                    <i data-lucide="search" class="absolute left-4 top-3.5 text-gray-400 w-5 h-5"></i>
-                    <input type="text" id="searchInput" oninput="filterData()" placeholder="Search restaurants or food items..." class="w-full pl-12 pr-4 py-3 rounded-xl text-gray-800 bg-white focus:outline-none shadow-md">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-4xl font-bold mb-4">Delicious Food, Delivered Fast</h2>
+                <p class="text-gray-200 mb-8">Discover top-rated restaurants and menu items near you.</p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <div class="relative flex-grow max-w-md">
+                        <i data-lucide="search" class="absolute left-4 top-3.5 text-gray-400 w-5 h-5"></i>
+                        <input type="text" id="searchInput" oninput="filterData()" placeholder="Search restaurants or items..." class="w-full pl-12 pr-4 py-3 rounded-xl text-gray-800 bg-white focus:outline-none shadow-md">
+                    </div>
+                    <select id="categoryFilter" onchange="filterData()" class="px-4 py-3 rounded-xl text-gray-800 bg-white focus:outline-none shadow-md font-medium">
+                        <option value="all">All Categories</option>
+                        <option value="Fast Food">Fast Food</option>
+                        <option value="Italian">Italian</option>
+                        <option value="Desi">Desi / Local</option>
+                        <option value="Dessert">Dessert</option>
+                    </select>
                 </div>
             </div>
         </section>
 
-        <!-- Admin Boosted Menus Horizontal Slider Section -->
-        <section class="max-w-7xl mx-auto px-4 pt-6 pb-2">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-1.5">🔥 Featured & Boosted Deals</h3>
-                <span class="text-xs text-gray-400">Swipe right to left ➔</span>
-            </div>
-            <div id="boostedSliderContainer" class="flex gap-4 overflow-x-auto no-scrollbar pb-3"></div>
-        </section>
-
-        <!-- Restaurant Categories Scroll Bar -->
-        <section class="max-w-7xl mx-auto px-4 pt-2 pb-2">
-            <h3 class="text-lg font-bold text-gray-800 mb-3">Categories</h3>
-            <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-                <button onclick="filterByCategory('all')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border-2 border-orange-500 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
-                    <span class="text-2xl mb-1">🍽️</span>
-                    <span class="text-xs font-semibold text-gray-700">All</span>
-                </button>
-                <button onclick="filterByCategory('Fast Food')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border border-gray-100 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
-                    <span class="text-2xl mb-1">🍔</span>
-                    <span class="text-xs font-semibold text-gray-700">Fast Food</span>
-                </button>
-                <button onclick="filterByCategory('Italian')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border border-gray-100 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
-                    <span class="text-2xl mb-1">🍕</span>
-                    <span class="text-xs font-semibold text-gray-700">Italian</span>
-                </button>
-                <button onclick="filterByCategory('Desi')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border border-gray-100 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
-                    <span class="text-2xl mb-1">🍛</span>
-                    <span class="text-xs font-semibold text-gray-700">Desi / Local</span>
-                </button>
-                <button onclick="filterByCategory('Home Kitchen')" class="category-btn flex-shrink-0 flex flex-col items-center bg-white border border-gray-100 p-3 rounded-2xl shadow-sm min-w-[90px] transition hover:shadow-md">
-                    <span class="text-2xl mb-1">🏡</span>
-                    <span class="text-xs font-semibold text-gray-700">Home Kitchen</span>
-                </button>
+        <!-- Restaurants Grid -->
+        <section class="max-w-7xl mx-auto px-4 py-10" id="restaurantSection">
+            <h3 class="text-2xl font-bold mb-6">Available Restaurants</h3>
+            <div id="restaurantContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Loaded dynamically -->
             </div>
         </section>
 
-        <!-- Restaurants List Section -->
-        <section class="max-w-7xl mx-auto px-4 py-8">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-800">Featured Restaurants</h3>
-            </div>
-            <div id="restaurantContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-        </section>
-
-        <!-- Menu View Section -->
-        <section id="menuSection" class="max-w-7xl mx-auto px-4 py-12 hidden">
+        <!-- Menu View (Hidden initially) -->
+        <section id="menuSection" class="max-w-7xl mx-auto px-4 py-10 hidden">
             <button onclick="backToRestaurants()" class="mb-6 flex items-center gap-2 text-orange-500 font-semibold hover:underline">
                 <i data-lucide="arrow-left" class="w-5 h-5"></i> Back to Restaurants
             </button>
-            <div id="restaurantHeader" class="bg-white p-6 rounded-2xl shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center gap-4"></div>
-
+            <div id="restaurantHeader" class="bg-white p-6 rounded-2xl shadow-sm mb-8 flex items-center gap-4"></div>
             <h4 class="text-xl font-bold mb-6">Menu Items</h4>
             <div id="menuContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
@@ -128,46 +84,26 @@
 
     <!-- Slide-over Cart Drawer -->
     <div id="cartDrawer" class="fixed inset-0 z-50 bg-black/50 hidden flex justify-end">
-        <div class="bg-white w-full max-w-md h-full p-6 flex flex-col justify-between shadow-2xl animate-fade-in overflow-y-auto">
+        <div class="bg-white w-full max-w-md h-full p-6 flex flex-col justify-between shadow-2xl animate-fade-in">
             <div>
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h3 class="text-xl font-bold flex items-center gap-2"><i data-lucide="shopping-cart"></i> Your Cart</h3>
-                        <p id="cartRestaurantBadge" class="text-xs text-orange-500 font-semibold mt-0.5"></p>
-                    </div>
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold flex items-center gap-2"><i data-lucide="shopping-cart"></i> Your Cart</h3>
                     <button onclick="toggleCart()" class="text-gray-500 hover:text-gray-700"><i data-lucide="x" class="w-6 h-6"></i></button>
                 </div>
-                
-                <div id="cartItems" class="space-y-3 mb-6"></div>
-
-                <!-- Checkout Form Fields -->
-                <div id="checkoutForm" class="space-y-3 border-t pt-4">
-                    <h4 class="font-bold text-gray-800 text-sm">Delivery Information</h4>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
-                        <input type="text" id="custName" placeholder="Enter your name" class="w-full px-3 py-2 border rounded-xl text-sm focus:outline-orange-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Mobile Number</label>
-                        <input type="tel" id="custMobile" placeholder="017xxxxxxxx" class="w-full px-3 py-2 border rounded-xl text-sm focus:outline-orange-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Delivery Address</label>
-                        <textarea id="custAddress" rows="2" placeholder="House, Road, Area..." class="w-full px-3 py-2 border rounded-xl text-sm focus:outline-orange-500"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Google Map Pin Point Link</label>
-                        <input type="url" id="custMapLink" placeholder="https://maps.app.goo.gl/..." class="w-full px-3 py-2 border rounded-xl text-sm focus:outline-orange-500">
-                    </div>
+                <div id="cartItems" class="space-y-4 overflow-y-auto max-h-[35vh]"></div>
+                <!-- Checkout Form Details -->
+                <div class="mt-6 space-y-3 border-t pt-4">
+                    <input type="text" id="custName" placeholder="Your Full Name" class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-orange-500">
+                    <input type="text" id="custMobile" placeholder="Mobile Number" class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-orange-500">
+                    <input type="text" id="custAddress" placeholder="Delivery Address" class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-orange-500">
                 </div>
             </div>
-
-            <div class="border-t pt-4 mt-4">
+            <div class="border-t pt-4">
                 <div class="flex justify-between font-bold text-lg mb-4">
                     <span>Total:</span>
-                    <span id="cartTotal">$0.00</span>
+                    <span id="cartTotal" class="text-orange-500">$0.00</span>
                 </div>
-                <button onclick="placeOrder()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-orange-500/30">Confirm & Place Order</button>
+                <button onclick="placeOrder()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-orange-500/30">Place Order</button>
             </div>
         </div>
     </div>
@@ -177,110 +113,60 @@
         <p>&copy; 2026 FoodHub. All rights reserved.</p>
     </footer>
 
-    <!-- JavaScript Application Logic -->
+    <!-- Script Application Logic -->
     <script>
-        lucide.createIcons();
-
+        // Supabase Initialization (Apnar credentials ekhane bosaben)
         const SUPABASE_URL = 'https://kdqyompkfmnocpihfzdj.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkcXlvbXBrZm1ub2NwaWhmemRqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTMwOTE5MiwiZXhwIjoyMTA0ODg1MTkyfQ.6H-sZrjy4lpuhtwmVI3y0Ad_-aWJku4MN-PaC3Lm7ys';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkcXlvbXBrZm1ub2NwaWhmemRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzMDkxOTIsImV4cCI6MjEwNDg4NTE5Mn0.4gmwMruyf54ZdXAADEAa9noLZD5JMFyLOzrszUIMVns';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let restaurants = [];
         let cart = [];
-        let currentRestaurantId = null;
-        let currentRestaurantName = "";
-        let pendingItem = null;
-        let selectedCategory = "all";
 
+        lucide.createIcons();
+
+        // Fetch Data from Supabase
         async function fetchAppData() {
             try {
-                // 1. Fetching from 'vendors' table instead of 'restaurants'
-                const { data: vendorData, error: vendorError } = await supabaseClient.from('vendors').select('*');
-                if (vendorError) throw vendorError;
+                const { data: resData, error: resError } = await supabaseClient.from('restaurants').select('*');
+                if (resError) throw resError;
 
-                // 2. Fetch menus
                 const { data: menuData, error: menuError } = await supabaseClient.from('menus').select('*');
                 if (menuError) throw menuError;
 
-                // 3. Mapping vendors data to restaurants format for customer site
-                restaurants = (vendorData || []).map(vendor => ({
-                    id: vendor.id,
-                    name: vendor.name,
-                    category: vendor.category || 'Fast Food',
-                    image: vendor.image || 'https://images.unsplash.com/photo-1552566626-52f8b828add9',
-                    rating: 5.0,
-                    menu: (menuData || []).filter(m => m.restaurant_id == vendor.id || m.restaurant_name === vendor.name)
+                restaurants = (resData || []).map(res => ({
+                    id: res.id,
+                    name: res.name,
+                    category: res.category || 'Fast Food',
+                    image: res.image || 'https://images.unsplash.com/photo-1552566626-52f8b828add9',
+                    rating: res.rating || 5.0,
+                    menu: (menuData || []).filter(m => m.restaurant_id == res.id || m.restaurant_name === res.name)
                 }));
 
-                renderBoostedSlider();
                 renderRestaurants(restaurants);
             } catch (err) {
-                console.error("Error loading data from Supabase:", err);
+                console.error("Error loading app data:", err);
             }
-        }
-
-        function renderBoostedSlider() {
-            const container = document.getElementById('boostedSliderContainer');
-            if (!container) return;
-            container.innerHTML = '';
-            
-            let boostedItems = [];
-            restaurants.forEach(res => {
-                res.menu.forEach(item => {
-                    if (item.is_boosted) {
-                        boostedItems.push({ ...item, resId: res.id, resName: res.name });
-                    }
-                });
-            });
-
-            if (boostedItems.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400">No boosted deals available right now.</p>`;
-                return;
-            }
-
-            boostedItems.forEach(item => {
-                const discountedPrice = item.price - (item.price * (item.discount || 0) / 100);
-                container.innerHTML += `
-                    <div class="flex-shrink-0 w-72 bg-white rounded-2xl shadow-sm border border-orange-100 overflow-hidden flex flex-col justify-between p-3 relative group">
-                        ${item.discount > 0 ? `<span class="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">${item.discount}% OFF</span>` : ''}
-                        <div class="h-32 w-full rounded-xl overflow-hidden mb-2 cursor-pointer" onclick="openRestaurant(${item.resId})">
-                            <img src="${item.image_url || item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                        </div>
-                        <div>
-                            <span class="text-[10px] text-orange-500 font-semibold">${item.resName}</span>
-                            <h5 class="font-bold text-sm text-gray-800 truncate">${item.name}</h5>
-                            <div class="flex items-center justify-between mt-2">
-                                <div>
-                                    <span class="text-orange-500 font-bold text-sm">$${discountedPrice.toFixed(2)}</span>
-                                    ${item.discount > 0 ? `<span class="text-gray-400 text-xs line-through ml-1">$${item.price.toFixed(2)}</span>` : ''}
-                                </div>
-                                <button onclick="addToCart(${item.resId}, '${item.resName}', '${item.name}', ${discountedPrice})" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 rounded-lg transition font-medium shadow-sm">Add</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
         }
 
         function renderRestaurants(data) {
             const container = document.getElementById('restaurantContainer');
-            if(!container) return;
             container.innerHTML = '';
             if(data.length === 0) {
-                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No vendors found in database.</p>`;
+                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found right now.</p>`;
                 return;
             }
             data.forEach(res => {
                 container.innerHTML += `
                     <div onclick="openRestaurant(${res.id})" class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition cursor-pointer group">
                         <div class="h-48 overflow-hidden">
-                            <img src="${res.image || 'https://images.unsplash.com/photo-1552566626-52f8b828add9'}" alt="${res.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <img src="${res.image}" alt="${res.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                         </div>
                         <div class="p-5">
-                            <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">${res.category || 'General'}</span>
+                            <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">${res.category}</span>
                             <h4 class="text-lg font-bold mt-2 text-gray-800">${res.name}</h4>
                             <div class="flex items-center gap-1 text-yellow-500 mt-2 text-sm font-semibold">
-                                <i data-lucide="star" class="w-4 h-4 fill-current"></i> ${res.rating || 5.0}
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i> ${res.rating} • ${res.menu.length} items
                             </div>
                         </div>
                     </div>
@@ -289,23 +175,12 @@
             lucide.createIcons();
         }
 
-        function filterByCategory(category) {
-            selectedCategory = category;
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('border-orange-500', 'border-2');
-                btn.classList.add('border-gray-100');
-            });
-            event.currentTarget.classList.remove('border-gray-100');
-            event.currentTarget.classList.add('border-orange-500', 'border-2');
-            filterData();
-        }
-
         function filterData() {
-            const searchInput = document.getElementById('searchInput');
-            if(!searchInput) return;
-            const query = searchInput.value.toLowerCase();
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+
             const filtered = restaurants.filter(res => {
-                const matchesCategory = selectedCategory === 'all' || (res.category && res.category.toLowerCase() === selectedCategory.toLowerCase());
+                const matchesCategory = category === 'all' || res.category === category;
                 const matchesSearch = res.name.toLowerCase().includes(query) || res.menu.some(m => m.name.toLowerCase().includes(query));
                 return matchesCategory && matchesSearch;
             });
@@ -314,203 +189,116 @@
 
         function openRestaurant(id) {
             const res = restaurants.find(r => r.id === id);
-            if(!res) return;
-
-            document.querySelector('main section.hero-bg').classList.add('hidden');
-            document.querySelector('main section:nth-of-type(2)').classList.add('hidden');
-            document.querySelector('main section:nth-of-type(3)').classList.add('hidden');
-            document.getElementById('restaurantContainer').parentElement.classList.add('hidden');
+            document.getElementById('restaurantSection').classList.add('hidden');
+            document.querySelector('section.hero-bg').classList.add('hidden');
             
             const menuSection = document.getElementById('menuSection');
             menuSection.classList.remove('hidden');
 
             document.getElementById('restaurantHeader').innerHTML = `
-                <div class="flex items-center gap-4">
-                    <img src="${res.image || 'https://images.unsplash.com/photo-1552566626-52f8b828add9'}" class="w-20 h-20 rounded-xl object-cover">
-                    <div>
-                        <h3 class="text-2xl font-bold">${res.name}</h3>
-                        <p class="text-gray-500">${res.category || 'General'} • ⭐ ${res.rating || 5.0}</p>
-                    </div>
+                <img src="${res.image}" class="w-20 h-20 rounded-xl object-cover">
+                <div>
+                    <h3 class="text-2xl font-bold">${res.name}</h3>
+                    <p class="text-gray-500">${res.category} • ⭐ ${res.rating}</p>
                 </div>
             `;
 
             const menuContainer = document.getElementById('menuContainer');
             menuContainer.innerHTML = '';
-            
             if(res.menu.length === 0) {
-                menuContainer.innerHTML = `<p class="col-span-full text-center text-gray-400 py-6">No menu items available for this restaurant.</p>`;
+                menuContainer.innerHTML = `<p class="col-span-full text-center text-gray-400 py-10">No menu items added for this restaurant yet.</p>`;
                 return;
             }
 
             res.menu.forEach(item => {
-                const hasDiscount = item.discount > 0;
-                const finalPrice = hasDiscount ? item.price - (item.price * item.discount / 100) : item.price;
-                
                 menuContainer.innerHTML += `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-4 relative">
-                        ${hasDiscount ? `<span class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${item.discount}% OFF</span>` : ''}
-                        <img src="${item.image_url || item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}" class="w-24 h-24 rounded-xl object-cover">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-4">
+                        <img src="${item.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}" class="w-24 h-24 rounded-xl object-cover">
                         <div class="flex-grow">
                             <h5 class="font-bold text-gray-800">${item.name}</h5>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="text-orange-500 font-semibold">$${finalPrice.toFixed(2)}</span>
-                                ${hasDiscount ? `<span class="text-gray-400 text-xs line-through">$${item.price.toFixed(2)}</span>` : ''}
-                            </div>
-                            <button onclick="addToCart(${res.id}, '${res.name}', '${item.name}', ${finalPrice})" class="mt-2 bg-orange-500 hover:bg-orange-600 text-white text-xs px-4 py-2 rounded-lg transition font-medium">Add to Cart</button>
+                            <p class="text-orange-500 font-semibold mt-1">$${parseFloat(item.price).toFixed(2)}</p>
+                            <button onclick="addToCart('${item.name}', ${item.price})" class="mt-2 bg-orange-500 hover:bg-orange-600 text-white text-xs px-4 py-2 rounded-lg transition font-medium">Add to Cart</button>
                         </div>
                     </div>
                 `;
             });
+            lucide.createIcons();
         }
 
         function backToRestaurants() {
-            document.querySelector('main section.hero-bg').classList.remove('hidden');
-            document.querySelector('main section:nth-of-type(2)').classList.remove('hidden');
-            document.querySelector('main section:nth-of-type(3)').classList.remove('hidden');
-            document.getElementById('restaurantContainer').parentElement.classList.remove('hidden');
+            document.getElementById('restaurantSection').classList.remove('hidden');
+            document.querySelector('section.hero-bg').classList.remove('hidden');
             document.getElementById('menuSection').classList.add('hidden');
         }
 
+        // Cart Actions
         function toggleCart() {
             document.getElementById('cartDrawer').classList.toggle('hidden');
         }
 
-        function addToCart(resId, resName, itemName, itemPrice) {
-            if(cart.length > 0 && currentRestaurantId !== resId) {
-                pendingItem = { resId, resName, itemName, itemPrice };
-                document.getElementById('confirmModalText').innerText = `Your cart contains items from "${currentRestaurantName}". Do you want to clear your cart and add items from "${resName}"?`;
-                document.getElementById('customConfirmModal').classList.remove('hidden');
-                return;
-            }
-            executeAddToCart(resId, resName, itemName, itemPrice);
-        }
-
-        function executeAddToCart(resId, resName, itemName, itemPrice) {
-            currentRestaurantId = resId;
-            currentRestaurantName = resName;
-
-            const existing = cart.find(item => item.name === itemName);
-            if(existing) {
-                existing.qty++;
-            } else {
-                cart.push({ name: itemName, price: itemPrice, qty: 1 });
-            }
+        function addToCart(name, price) {
+            const existing = cart.find(item => item.name === name);
+            if(existing) { existing.qty++; } 
+            else { cart.push({ name, price, qty: 1 }); }
             updateCartUI();
-        }
-
-        function closeCustomConfirm(isConfirmed) {
-            document.getElementById('customConfirmModal').classList.add('hidden');
-            if(isConfirmed && pendingItem) {
-                cart = [];
-                executeAddToCart(pendingItem.resId, pendingItem.resName, pendingItem.itemName, pendingItem.itemPrice);
-            }
-            pendingItem = null;
-        }
-
-        function updateQuantity(index, change) {
-            cart[index].qty += change;
-            if(cart[index].qty <= 0) {
-                cart.splice(index, 1);
-            }
-            updateCartUI();
+            toggleCart();
         }
 
         function updateCartUI() {
-            const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
-            const cartCountEl = document.getElementById('cartCount');
-            if(cartCountEl) cartCountEl.innerText = totalCount;
-            
-            const badge = document.getElementById('cartRestaurantBadge');
-            if(badge) {
-                if(cart.length > 0) {
-                    badge.innerText = `Ordering from: ${currentRestaurantName}`;
-                } else {
-                    badge.innerText = "";
-                    currentRestaurantId = null;
-                    currentRestaurantName = "";
-                }
-            }
-
+            document.getElementById('cartCount').innerText = cart.reduce((sum, item) => sum + item.qty, 0);
             const container = document.getElementById('cartItems');
-            if(!container) return;
             container.innerHTML = '';
             let total = 0;
 
             if(cart.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-6 text-sm">Your cart is empty.</p>`;
+                container.innerHTML = `<p class="text-center text-gray-400 py-10">Your cart is empty.</p>`;
             }
 
             cart.forEach((item, index) => {
                 total += item.price * item.qty;
                 container.innerHTML += `
-                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl gap-2">
-                        <div class="flex-grow">
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
+                        <div>
                             <h6 class="font-semibold text-sm">${item.name}</h6>
-                            <p class="text-xs text-orange-500 font-medium">$${item.price.toFixed(2)} x ${item.qty} = $${(item.price * item.qty).toFixed(2)}</p>
+                            <p class="text-xs text-gray-500">$${item.price} x ${item.qty}</p>
                         </div>
-                        <div class="flex items-center gap-2 bg-white border px-2 py-1 rounded-lg">
-                            <button onclick="updateQuantity(${index}, -1)" class="text-gray-500 hover:text-black font-bold px-1">-</button>
-                            <span class="text-xs font-semibold">${item.qty}×</span>
-                            <button onclick="updateQuantity(${index}, 1)" class="text-orange-500 hover:text-orange-600 font-bold px-1">+</button>
-                        </div>
+                        <button onclick="cart.splice(${index},1); updateCartUI();" class="text-red-500 text-xs font-semibold hover:underline">Remove</button>
                     </div>
                 `;
             });
-            const cartTotalEl = document.getElementById('cartTotal');
-            if(cartTotalEl) cartTotalEl.innerText = `$${total.toFixed(2)}`;
+            document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
         }
 
         async function placeOrder() {
-            if(cart.length === 0) {
-                alert("Your cart is empty!");
-                return;
-            }
+            if(cart.length === 0) { alert("Cart is empty!"); return; }
+            const name = document.getElementById('custName').value;
+            const mobile = document.getElementById('custMobile').value;
+            const address = document.getElementById('custAddress').value;
 
-            const name = document.getElementById('custName').value.trim();
-            const mobile = document.getElementById('custMobile').value.trim();
-            const address = document.getElementById('custAddress').value.trim();
-            const mapLink = document.getElementById('custMapLink').value.trim();
+            if(!name || !mobile || !address) { alert("Please fill up all contact details in cart!"); return; }
 
-            if(!name || !mobile || !address) {
-                alert("Please fill up Name, Mobile Number and Delivery Address!");
-                return;
-            }
+            const total_amount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
-            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-
-            const newOrder = {
-                restaurant_name: currentRestaurantName,
+            const { error } = await supabaseClient.from('orders').insert([{
                 customer_name: name,
                 mobile: mobile,
                 address: address,
-                map_link: mapLink,
                 items: cart,
-                total_amount: totalAmount,
-                status: 'Pending'
-            };
+                total_amount: total_amount,
+                restaurant_name: "FoodHub Online Order"
+            }]);
 
-            try {
-                const { data, error } = await supabaseClient.from('orders').insert([newOrder]).select();
-                if (error) throw error;
-
-                alert(`Thank you ${name}! Your order has been placed successfully.`);
-
+            if(error) {
+                alert("Error placing order: " + error.message);
+            } else {
+                alert("Order placed successfully!");
                 cart = [];
-                currentRestaurantId = null;
-                currentRestaurantName = "";
-                document.getElementById('custName').value = '';
-                document.getElementById('custMobile').value = '';
-                document.getElementById('custAddress').value = '';
-                document.getElementById('custMapLink').value = '';
                 updateCartUI();
                 toggleCart();
-                backToRestaurants();
-            } catch (err) {
-                console.error("Order submission failed:", err);
-                alert("Failed to place order. Please try again.");
             }
         }
 
+        // Initial Load
         fetchAppData();
     </script>
 </body>
