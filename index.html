@@ -191,86 +191,31 @@
         let currentRestaurantName = "";
         let pendingItem = null;
         let selectedCategory = "all";
-        let loggedInVendor = JSON.parse(localStorage.getItem('vendorSession')) || { name: "asia kitchen" }; // Fallback for testing
 
         async function fetchAppData() {
             try {
-                const { data: resData, error: resError } = await supabaseClient.from('restaurants').select('*');
-                if (resError) throw resError;
+                // 1. Fetching from 'vendors' table instead of 'restaurants'
+                const { data: vendorData, error: vendorError } = await supabaseClient.from('vendors').select('*');
+                if (vendorError) throw vendorError;
 
-                const { data: menuData, error: menuError } = await supabaseClient.from('menus').select('*, restaurants(name)');
+                // 2. Fetch menus
+                const { data: menuData, error: menuError } = await supabaseClient.from('menus').select('*');
                 if (menuError) throw menuError;
 
-                restaurants = resData.map(res => ({
-                    ...res,
-                    category: res.category || 'Fast Food',
-                    menu: menuData.filter(m => m.restaurant_id === res.id)
+                // 3. Mapping vendors data to restaurants format for customer site
+                restaurants = (vendorData || []).map(vendor => ({
+                    id: vendor.id,
+                    name: vendor.name,
+                    category: vendor.category || 'Fast Food',
+                    image: vendor.image || 'https://images.unsplash.com/photo-1552566626-52f8b828add9',
+                    rating: 5.0,
+                    menu: (menuData || []).filter(m => m.restaurant_id == vendor.id || m.restaurant_name === vendor.name)
                 }));
 
                 renderBoostedSlider();
                 renderRestaurants(restaurants);
             } catch (err) {
                 console.error("Error loading data from Supabase:", err);
-            }
-        }
-
-        async function addMenuItemToSupabase() {
-            const itemName = document.getElementById('menuItemName').value.trim();
-            const itemPrice = parseFloat(document.getElementById('menuItemPrice').value);
-            const imageFile = document.getElementById('menuItemImageFile').files[0];
-
-            if(!itemName || isNaN(itemPrice) || !imageFile) {
-                alert("Please fill all fields and select an image file!");
-                return;
-            }
-
-            // Check if restaurant exists for loggedInVendor, if not create it automatically
-            let { data: resData } = await supabaseClient.from('restaurants').select('id').eq('name', loggedInVendor.name).single();
-            
-            let restaurantId;
-            if (!resData) {
-                const { data: newRes, error: newResError } = await supabaseClient.from('restaurants').insert([{
-                    name: loggedInVendor.name,
-                    category: 'Fast Food',
-                    address: 'Online Store',
-                    image: 'https://images.unsplash.com/photo-1552566626-52f8b828add9'
-                }]).select().single();
-
-                if (newResError) {
-                    alert("Failed to create restaurant profile: " + newResError.message);
-                    return;
-                }
-                restaurantId = newRes.id;
-            } else {
-                restaurantId = resData.id;
-            }
-
-            const fileName = `menu_${Date.now()}_${imageFile.name}`;
-            const { error: uploadError } = await supabaseClient.storage.from('images').upload(fileName, imageFile);
-
-            if(uploadError) {
-                alert("Image Upload Failed: " + uploadError.message);
-                return;
-            }
-
-            const { data: urlData } = supabaseClient.storage.from('images').getPublicUrl(fileName);
-            const publicImageUrl = urlData.publicUrl;
-
-            const { error: insertError } = await supabaseClient.from('menus').insert([{
-                restaurant_id: restaurantId, 
-                name: itemName,
-                price: itemPrice,
-                image_url: publicImageUrl
-            }]);
-
-            if(insertError) {
-                alert("Failed to add menu: " + insertError.message);
-            } else {
-                alert("✅ Menu item added successfully and restaurant is now live!");
-                document.getElementById('menuItemName').value = '';
-                document.getElementById('menuItemPrice').value = '';
-                document.getElementById('menuItemImageFile').value = '';
-                fetchAppData();
             }
         }
 
@@ -283,7 +228,7 @@
             restaurants.forEach(res => {
                 res.menu.forEach(item => {
                     if (item.is_boosted) {
-                        boostedItems.push({ ...item, resId: res.id, resName: res.restaurants ? res.restaurants.name : res.name });
+                        boostedItems.push({ ...item, resId: res.id, resName: res.name });
                     }
                 });
             });
@@ -322,7 +267,7 @@
             if(!container) return;
             container.innerHTML = '';
             if(data.length === 0) {
-                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found in database.</p>`;
+                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No vendors found in database.</p>`;
                 return;
             }
             data.forEach(res => {
