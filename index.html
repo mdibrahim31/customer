@@ -202,6 +202,7 @@
 
                 restaurants = resData.map(res => ({
                     ...res,
+                    category: res.category || 'Fast Food', // Fallback category jodi faka thake
                     menu: menuData.filter(m => m.restaurant_id === res.id)
                 }));
 
@@ -236,7 +237,7 @@
                     <div class="flex-shrink-0 w-72 bg-white rounded-2xl shadow-sm border border-orange-100 overflow-hidden flex flex-col justify-between p-3 relative group">
                         ${item.discount > 0 ? `<span class="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">${item.discount}% OFF</span>` : ''}
                         <div class="h-32 w-full rounded-xl overflow-hidden mb-2 cursor-pointer" onclick="openRestaurant(${item.resId})">
-                            <img src="${item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            <img src="${item.image_url || item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                         </div>
                         <div>
                             <span class="text-[10px] text-orange-500 font-semibold">${item.resName}</span>
@@ -258,7 +259,7 @@
             const container = document.getElementById('restaurantContainer');
             container.innerHTML = '';
             if(data.length === 0) {
-                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found in database. Please add via Telegram Bot.</p>`;
+                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found in database.</p>`;
                 return;
             }
             data.forEach(res => {
@@ -268,7 +269,7 @@
                             <img src="${res.image || 'https://images.unsplash.com/photo-1552566626-52f8b828add9'}" alt="${res.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                         </div>
                         <div class="p-5">
-                            <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">${res.category}</span>
+                            <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">${res.category || 'General'}</span>
                             <h4 class="text-lg font-bold mt-2 text-gray-800">${res.name}</h4>
                             <div class="flex items-center gap-1 text-yellow-500 mt-2 text-sm font-semibold">
                                 <i data-lucide="star" class="w-4 h-4 fill-current"></i> ${res.rating || 5.0}
@@ -294,7 +295,7 @@
         function filterData() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filtered = restaurants.filter(res => {
-                const matchesCategory = selectedCategory === 'all' || res.category === selectedCategory;
+                const matchesCategory = selectedCategory === 'all' || (res.category && res.category.toLowerCase() === selectedCategory.toLowerCase());
                 const matchesSearch = res.name.toLowerCase().includes(query) || res.menu.some(m => m.name.toLowerCase().includes(query));
                 return matchesCategory && matchesSearch;
             });
@@ -318,7 +319,7 @@
                     <img src="${res.image || 'https://images.unsplash.com/photo-1552566626-52f8b828add9'}" class="w-20 h-20 rounded-xl object-cover">
                     <div>
                         <h3 class="text-2xl font-bold">${res.name}</h3>
-                        <p class="text-gray-500">${res.category} • ⭐ ${res.rating || 5.0}</p>
+                        <p class="text-gray-500">${res.category || 'General'} • ⭐ ${res.rating || 5.0}</p>
                     </div>
                 </div>
             `;
@@ -338,7 +339,7 @@
                 menuContainer.innerHTML += `
                     <div class="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-4 relative">
                         ${hasDiscount ? `<span class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${item.discount}% OFF</span>` : ''}
-                        <img src="${item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}" class="w-24 h-24 rounded-xl object-cover">
+                        <img src="${item.image_url || item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}" class="w-24 h-24 rounded-xl object-cover">
                         <div class="flex-grow">
                             <h5 class="font-bold text-gray-800">${item.name}</h5>
                             <div class="flex items-center gap-2 mt-1">
@@ -406,18 +407,23 @@
 
         function updateCartUI() {
             const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
-            document.getElementById('cartCount').innerText = totalCount;
+        
+            const cartCountEl = document.getElementById('cartCount');
+            if(cartCountEl) cartCountEl.innerText = totalCount;
             
             const badge = document.getElementById('cartRestaurantBadge');
-            if(cart.length > 0) {
-                badge.innerText = `Ordering from: ${currentRestaurantName}`;
-            } else {
-                badge.innerText = "";
-                currentRestaurantId = null;
-                currentRestaurantName = "";
+            if(badge) {
+                if(cart.length > 0) {
+                    badge.innerText = `Ordering from: ${currentRestaurantName}`;
+                } else {
+                    badge.innerText = "";
+                    currentRestaurantId = null;
+                    currentRestaurantName = "";
+                }
             }
 
             const container = document.getElementById('cartItems');
+            if(!container) return;
             container.innerHTML = '';
             let total = 0;
 
@@ -441,7 +447,8 @@
                     </div>
                 `;
             });
-            document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
+            const cartTotalEl = document.getElementById('cartTotal');
+            if(cartTotalEl) cartTotalEl.innerText = `$${total.toFixed(2)}`;
         }
 
         async function placeOrder() {
@@ -451,7 +458,7 @@
             }
 
             const name = document.getElementById('custName').value.trim();
-            const mobile = document.getElementById('custMobile').value.trim();
+            const mobile = document.getElementById('custMobile').value.log ? document.getElementById('custMobile').value.trim() : document.getElementById('custMobile').value.trim();
             const address = document.getElementById('custAddress').value.trim();
             const mapLink = document.getElementById('custMapLink').value.trim();
 
