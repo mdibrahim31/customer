@@ -191,6 +191,7 @@
         let currentRestaurantName = "";
         let pendingItem = null;
         let selectedCategory = "all";
+        let loggedInVendor = JSON.parse(localStorage.getItem('vendorSession')) || { name: "asia kitchen" }; // Fallback for testing
 
         async function fetchAppData() {
             try {
@@ -202,7 +203,7 @@
 
                 restaurants = resData.map(res => ({
                     ...res,
-                    category: res.category || 'Fast Food', // Fallback category jodi faka thake
+                    category: res.category || 'Fast Food',
                     menu: menuData.filter(m => m.restaurant_id === res.id)
                 }));
 
@@ -213,8 +214,69 @@
             }
         }
 
+        async function addMenuItemToSupabase() {
+            const itemName = document.getElementById('menuItemName').value.trim();
+            const itemPrice = parseFloat(document.getElementById('menuItemPrice').value);
+            const imageFile = document.getElementById('menuItemImageFile').files[0];
+
+            if(!itemName || isNaN(itemPrice) || !imageFile) {
+                alert("Please fill all fields and select an image file!");
+                return;
+            }
+
+            // Check if restaurant exists for loggedInVendor, if not create it automatically
+            let { data: resData } = await supabaseClient.from('restaurants').select('id').eq('name', loggedInVendor.name).single();
+            
+            let restaurantId;
+            if (!resData) {
+                const { data: newRes, error: newResError } = await supabaseClient.from('restaurants').insert([{
+                    name: loggedInVendor.name,
+                    category: 'Fast Food',
+                    address: 'Online Store',
+                    image: 'https://images.unsplash.com/photo-1552566626-52f8b828add9'
+                }]).select().single();
+
+                if (newResError) {
+                    alert("Failed to create restaurant profile: " + newResError.message);
+                    return;
+                }
+                restaurantId = newRes.id;
+            } else {
+                restaurantId = resData.id;
+            }
+
+            const fileName = `menu_${Date.now()}_${imageFile.name}`;
+            const { error: uploadError } = await supabaseClient.storage.from('images').upload(fileName, imageFile);
+
+            if(uploadError) {
+                alert("Image Upload Failed: " + uploadError.message);
+                return;
+            }
+
+            const { data: urlData } = supabaseClient.storage.from('images').getPublicUrl(fileName);
+            const publicImageUrl = urlData.publicUrl;
+
+            const { error: insertError } = await supabaseClient.from('menus').insert([{
+                restaurant_id: restaurantId, 
+                name: itemName,
+                price: itemPrice,
+                image_url: publicImageUrl
+            }]);
+
+            if(insertError) {
+                alert("Failed to add menu: " + insertError.message);
+            } else {
+                alert("✅ Menu item added successfully and restaurant is now live!");
+                document.getElementById('menuItemName').value = '';
+                document.getElementById('menuItemPrice').value = '';
+                document.getElementById('menuItemImageFile').value = '';
+                fetchAppData();
+            }
+        }
+
         function renderBoostedSlider() {
             const container = document.getElementById('boostedSliderContainer');
+            if (!container) return;
             container.innerHTML = '';
             
             let boostedItems = [];
@@ -257,6 +319,7 @@
 
         function renderRestaurants(data) {
             const container = document.getElementById('restaurantContainer');
+            if(!container) return;
             container.innerHTML = '';
             if(data.length === 0) {
                 container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found in database.</p>`;
@@ -293,7 +356,9 @@
         }
 
         function filterData() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+            const searchInput = document.getElementById('searchInput');
+            if(!searchInput) return;
+            const query = searchInput.value.toLowerCase();
             const filtered = restaurants.filter(res => {
                 const matchesCategory = selectedCategory === 'all' || (res.category && res.category.toLowerCase() === selectedCategory.toLowerCase());
                 const matchesSearch = res.name.toLowerCase().includes(query) || res.menu.some(m => m.name.toLowerCase().includes(query));
@@ -407,7 +472,6 @@
 
         function updateCartUI() {
             const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
-        
             const cartCountEl = document.getElementById('cartCount');
             if(cartCountEl) cartCountEl.innerText = totalCount;
             
@@ -458,7 +522,7 @@
             }
 
             const name = document.getElementById('custName').value.trim();
-            const mobile = document.getElementById('custMobile').value.log ? document.getElementById('custMobile').value.trim() : document.getElementById('custMobile').value.trim();
+            const mobile = document.getElementById('custMobile').value.trim();
             const address = document.getElementById('custAddress').value.trim();
             const mapLink = document.getElementById('custMapLink').value.trim();
 
