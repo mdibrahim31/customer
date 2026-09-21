@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FoodHub - Pure HTML & CSS</title>
+    <title>FoodHub - Popup Modal Demo</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,9 +13,9 @@
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80');
             background-size: cover; background-position: center;
         }
-        /* Native Popover Styling */
-        [popover] {
-            transition: all 0.3s ease-in-out;
+        /* Popover backdrop style */
+        [popover]::backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
         }
     </style>
 </head>
@@ -30,10 +30,9 @@
             <nav class="hidden md:flex gap-6 font-medium text-gray-600">
                 <a href="#restaurants" class="hover:text-orange-500 transition">Restaurants</a>
                 <a href="#categories" class="hover:text-orange-500 transition">Categories</a>
-                <a href="#offers" class="hover:text-orange-500 transition">Offers</a>
             </nav>
             <div class="flex items-center gap-3">
-                <!-- Cart Button with HTML5 Popover Target -->
+                <!-- Cart Button with Popover Target -->
                 <button popovertarget="cartDrawer" class="relative bg-orange-50 hover:bg-orange-100 text-orange-600 px-4 py-2.5 rounded-xl transition flex items-center gap-2 font-medium cursor-pointer">
                     🛒 <span>Cart</span>
                     <span class="bg-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">2</span>
@@ -56,31 +55,8 @@
             </div>
         </section>
 
-        <!-- Categories Section -->
-        <section id="categories" class="max-w-7xl mx-auto px-4 py-10">
-            <h3 class="text-2xl font-bold mb-6">Popular Categories</h3>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm text-center hover:shadow-md transition cursor-pointer">
-                    <span class="text-3xl">🍔</span>
-                    <h4 class="font-bold mt-2">Fast Food</h4>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm text-center hover:shadow-md transition cursor-pointer">
-                    <span class="text-3xl">🍝</span>
-                    <h4 class="font-bold mt-2">Italian</h4>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm text-center hover:shadow-md transition cursor-pointer">
-                    <span class="text-3xl">🍛</span>
-                    <h4 class="font-bold mt-2">Desi / Local</h4>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm text-center hover:shadow-md transition cursor-pointer">
-                    <span class="text-3xl">🍰</span>
-                    <h4 class="font-bold mt-2">Dessert</h4>
-                </div>
-            </div>
-        </section>
-
         <!-- Restaurants Section -->
-        <section id="restaurants" class="max-w-7xl mx-auto px-4 py-6">
+        <section id="restaurants" class="max-w-7xl mx-auto px-4 py-10">
             <h3 class="text-2xl font-bold mb-6">Available Restaurants</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Card 1 -->
@@ -92,7 +68,7 @@
                         <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">Fast Food</span>
                         <h4 class="text-lg font-bold mt-2 text-gray-800">Burger House & Co.</h4>
                         <div class="flex items-center justify-between mt-4">
-                            <span class="text-sm text-yellow-500 font-bold">⭐ 4.9 (120+ reviews)</span>
+                            <span class="text-sm text-yellow-500 font-bold">⭐ 4.9</span>
                             <button popovertarget="menuModal" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-2 rounded-lg transition font-medium">View Menu</button>
                         </div>
                     </div>
@@ -107,7 +83,7 @@
                         <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">Italian</span>
                         <h4 class="text-lg font-bold mt-2 text-gray-800">Pizza Palace</h4>
                         <div class="flex items-center justify-between mt-4">
-                            <span class="text-sm text-yellow-500 font-bold">⭐ 4.8 (95+ reviews)</span>
+                            <span class="text-sm text-yellow-500 font-bold">⭐ 4.8</span>
                             <button popovertarget="menuModal" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-2 rounded-lg transition font-medium">View Menu</button>
                         </div>
                     </div>
@@ -122,7 +98,7 @@
                         <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">Desi / Local</span>
                         <h4 class="text-lg font-bold mt-2 text-gray-800">Grand Biryani House</h4>
                         <div class="flex items-center justify-between mt-4">
-                            <span class="text-sm text-yellow-500 font-bold">⭐ 5.0 (210+ reviews)</span>
+                            <span class="text-sm text-yellow-500 font-bold">⭐ 5.0</span>
                             <button popovertarget="menuModal" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-2 rounded-lg transition font-medium">View Menu</button>
                         </div>
                     </div>
@@ -131,51 +107,49 @@
         </section>
     </main>
 
-    <!-- 1. Native HTML5 Popover: Cart Drawer Window -->
-    <div id="cartDrawer" popover class="fixed inset-y-0 right-0 left-auto w-full max-w-md h-full bg-white shadow-2xl p-6 flex flex-col justify-between border-l">
-        <div>
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold">🛒 Your Cart</h3>
-                <button popovertarget="cartDrawer" popovertargetaction="hide" class="text-gray-500 hover:text-gray-700 font-bold text-xl">&times;</button>
-            </div>
-            <div class="space-y-4">
-                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
-                    <div>
-                        <h6 class="font-semibold text-sm">Cheeseburger Deluxe</h6>
-                        <p class="text-xs text-gray-500">$8.99 x 1</p>
-                    </div>
-                    <span class="text-red-500 text-xs font-semibold cursor-pointer">Remove</span>
+    <!-- 1. Centered Popup Window: Cart Modal -->
+    <div id="cartDrawer" popover class="w-11/12 max-w-md bg-white rounded-2xl shadow-2xl p-6 m-auto border">
+        <div class="flex justify-between items-center mb-4 border-b pb-3">
+            <h3 class="text-xl font-bold flex items-center gap-2">🛒 Your Cart</h3>
+            <button popovertarget="cartDrawer" popovertargetaction="hide" class="text-gray-500 font-bold text-xl cursor-pointer">&times;</button>
+        </div>
+        <div class="space-y-3 max-h-48 overflow-y-auto">
+            <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
+                <div>
+                    <h6 class="font-semibold text-sm">Cheeseburger Deluxe</h6>
+                    <p class="text-xs text-gray-500">$8.99 x 1</p>
                 </div>
-                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
-                    <div>
-                        <h6 class="font-semibold text-sm">French Fries</h6>
-                        <p class="text-xs text-gray-500">$3.49 x 1</p>
-                    </div>
-                    <span class="text-red-500 text-xs font-semibold cursor-pointer">Remove</span>
-                </div>
+                <span class="text-red-500 text-xs font-semibold cursor-pointer">Remove</span>
             </div>
-            <!-- Checkout Form -->
-            <div class="mt-6 space-y-3 border-t pt-4">
-                <input type="text" placeholder="Your Full Name" class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-orange-500">
-                <input type="text" placeholder="Delivery Address" class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-orange-500">
+            <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
+                <div>
+                    <h6 class="font-semibold text-sm">French Fries</h6>
+                    <p class="text-xs text-gray-500">$3.49 x 1</p>
+                </div>
+                <span class="text-red-500 text-xs font-semibold cursor-pointer">Remove</span>
             </div>
         </div>
-        <div class="border-t pt-4">
+        <!-- Checkout Form -->
+        <div class="mt-4 space-y-3 border-t pt-4">
+            <input type="text" placeholder="Your Full Name" class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-orange-500">
+            <input type="text" placeholder="Delivery Address" class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-orange-500">
+        </div>
+        <div class="mt-4 border-t pt-4">
             <div class="flex justify-between font-bold text-lg mb-4">
                 <span>Total:</span>
                 <span class="text-orange-500">$12.48</span>
             </div>
-            <button onclick="alert('Order placed successfully (HTML & CSS Demo)!')" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition shadow-lg">Place Order</button>
+            <button onclick="alert('Order placed successfully!')" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition shadow-lg cursor-pointer">Place Order</button>
         </div>
     </div>
 
-    <!-- 2. Native HTML5 Popover: Menu Window -->
-    <div id="menuModal" popover class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-6 m-auto border">
+    <!-- 2. Centered Popup Window: Menu Modal -->
+    <div id="menuModal" popover class="w-11/12 max-w-lg bg-white rounded-2xl shadow-2xl p-6 m-auto border">
         <div class="flex justify-between items-center mb-4 border-b pb-3">
             <h3 class="text-xl font-bold">🍽️ Restaurant Menu</h3>
-            <button popovertarget="menuModal" popovertargetaction="hide" class="text-gray-500 font-bold text-xl">&times;</button>
+            <button popovertarget="menuModal" popovertargetaction="hide" class="text-gray-500 font-bold text-xl cursor-pointer">&times;</button>
         </div>
-        <div class="space-y-4 max-h-[60vh] overflow-y-auto">
+        <div class="space-y-3 max-h-64 overflow-y-auto">
             <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
                 <div>
                     <h5 class="font-bold text-sm">Double Patty Burger</h5>
@@ -195,7 +169,7 @@
 
     <!-- Footer -->
     <footer class="bg-white border-t py-6 text-center text-gray-500 text-sm">
-        <p>&copy; 2026 FoodHub. Built with pure HTML & CSS.</p>
+        <p>&copy; 2026 FoodHub. All rights reserved.</p>
     </footer>
 </body>
 </html>
