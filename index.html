@@ -3,308 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FoodHub - Order Delicious Food</title>
-    <!-- Google Fonts, Tailwind CSS & Supabase JS -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>FoodHub - Pure HTML & CSS</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
         .hero-bg {
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80');
             background-size: cover; background-position: center;
+        }
+        /* Native Popover Styling */
+        [popover] {
+            transition: all 0.3s ease-in-out;
         }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between">
 
-    <!-- Navigation Header -->
+    <!-- Header Navigation -->
     <header class="bg-white shadow-sm sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-orange-500 flex items-center gap-2 cursor-pointer" onclick="backToVendors()">
-                <i data-lucide="utensils"></i> FoodHub
-            </h1>
+            <a href="#" class="text-2xl font-bold text-orange-500 flex items-center gap-2">
+                🍕 FoodHub
+            </a>
+            <nav class="hidden md:flex gap-6 font-medium text-gray-600">
+                <a href="#restaurants" class="hover:text-orange-500 transition">Restaurants</a>
+                <a href="#categories" class="hover:text-orange-500 transition">Categories</a>
+                <a href="#offers" class="hover:text-orange-500 transition">Offers</a>
+            </nav>
             <div class="flex items-center gap-3">
-                <button onclick="toggleCart()" class="relative bg-orange-50 hover:bg-orange-100 text-orange-600 px-4 py-2.5 rounded-xl transition flex items-center gap-2 font-medium">
-                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-                    <span>Cart</span>
-                    <span id="cartCount" class="bg-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                <!-- Cart Button with HTML5 Popover Target -->
+                <button popovertarget="cartDrawer" class="relative bg-orange-50 hover:bg-orange-100 text-orange-600 px-4 py-2.5 rounded-xl transition flex items-center gap-2 font-medium cursor-pointer">
+                    🛒 <span>Cart</span>
+                    <span class="bg-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">2</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Views Container -->
+    <!-- Main Content -->
     <main class="flex-grow">
         <!-- Hero Section -->
-        <section class="hero-bg text-white py-16 px-4 text-center">
+        <section class="hero-bg text-white py-20 px-4 text-center">
             <div class="max-w-3xl mx-auto">
-                <h2 class="text-4xl font-bold mb-4">Delicious Food, Delivered Fast</h2>
-                <p class="text-gray-200 mb-8">Discover top-rated vendors and menu items near you.</p>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">Delicious Food, Delivered Fast</h2>
+                <p class="text-gray-200 mb-8">Discover top-rated restaurants and local food items near you.</p>
                 <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                    <div class="relative flex-grow max-w-md">
-                        <i data-lucide="search" class="absolute left-4 top-3.5 text-gray-400 w-5 h-5"></i>
-                        <input type="text" id="searchInput" oninput="filterData()" placeholder="Search vendors or items..." class="w-full pl-12 pr-4 py-3 rounded-xl text-gray-800 bg-white focus:outline-none shadow-md">
-                    </div>
-                    <select id="categoryFilter" onchange="filterData()" class="px-4 py-3 rounded-xl text-gray-800 bg-white focus:outline-none shadow-md font-medium">
-                        <option value="all">All Categories</option>
-                        <option value="Fast Food">Fast Food</option>
-                        <option value="Italian">Italian</option>
-                        <option value="Desi">Desi / Local</option>
-                        <option value="Dessert">Dessert</option>
-                    </select>
+                    <input type="text" placeholder="Search restaurants or dishes..." class="w-full sm:w-96 px-4 py-3 rounded-xl text-gray-800 bg-white focus:outline-none shadow-md">
+                    <button class="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition shadow-md">Search</button>
                 </div>
             </div>
         </section>
 
-        <!-- Vendors Grid -->
-        <section class="max-w-7xl mx-auto px-4 py-10" id="vendorSection">
-            <h3 class="text-2xl font-bold mb-6">Available Restaurants</h3>
-            <div id="vendorContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Loaded dynamically -->
+        <!-- Categories Section -->
+        <section id="categories" class="max-w-7xl mx-auto px-4 py-10">
+            <h3 class="text-2xl font-bold mb-6">Popular Categories</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm text-center hover:shadow-md transition cursor-pointer">
+                    <span class="text-3xl">🍔</span>
+                    <h4 class="font-bold mt-2">Fast Food</h4>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm text-center hover:shadow-md transition cursor-pointer">
+                    <span class="text-3xl">🍝</span>
+                    <h4 class="font-bold mt-2">Italian</h4>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm text-center hover:shadow-md transition cursor-pointer">
+                    <span class="text-3xl">🍛</span>
+                    <h4 class="font-bold mt-2">Desi / Local</h4>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm text-center hover:shadow-md transition cursor-pointer">
+                    <span class="text-3xl">🍰</span>
+                    <h4 class="font-bold mt-2">Dessert</h4>
+                </div>
             </div>
         </section>
 
-        <!-- Menu View (Hidden initially) -->
-        <section id="menuSection" class="max-w-7xl mx-auto px-4 py-10 hidden">
-            <button onclick="backToVendors()" class="mb-6 flex items-center gap-2 text-orange-500 font-semibold hover:underline">
-                <i data-lucide="arrow-left" class="w-5 h-5"></i> Back to Restaurants
-            </button>
-            <div id="vendorHeader" class="bg-white p-6 rounded-2xl shadow-sm mb-8 flex items-center gap-4"></div>
-            <h4 class="text-xl font-bold mb-6">Menu Items</h4>
-            <div id="menuContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <!-- Restaurants Section -->
+        <section id="restaurants" class="max-w-7xl mx-auto px-4 py-6">
+            <h3 class="text-2xl font-bold mb-6">Available Restaurants</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition group">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1552566626-52f8b828add9" alt="Burger House" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    </div>
+                    <div class="p-5">
+                        <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">Fast Food</span>
+                        <h4 class="text-lg font-bold mt-2 text-gray-800">Burger House & Co.</h4>
+                        <div class="flex items-center justify-between mt-4">
+                            <span class="text-sm text-yellow-500 font-bold">⭐ 4.9 (120+ reviews)</span>
+                            <button popovertarget="menuModal" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-2 rounded-lg transition font-medium">View Menu</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition group">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591" alt="Pizza Palace" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    </div>
+                    <div class="p-5">
+                        <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">Italian</span>
+                        <h4 class="text-lg font-bold mt-2 text-gray-800">Pizza Palace</h4>
+                        <div class="flex items-center justify-between mt-4">
+                            <span class="text-sm text-yellow-500 font-bold">⭐ 4.8 (95+ reviews)</span>
+                            <button popovertarget="menuModal" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-2 rounded-lg transition font-medium">View Menu</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition group">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c" alt="Desi Kitchen" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    </div>
+                    <div class="p-5">
+                        <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">Desi / Local</span>
+                        <h4 class="text-lg font-bold mt-2 text-gray-800">Grand Biryani House</h4>
+                        <div class="flex items-center justify-between mt-4">
+                            <span class="text-sm text-yellow-500 font-bold">⭐ 5.0 (210+ reviews)</span>
+                            <button popovertarget="menuModal" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-2 rounded-lg transition font-medium">View Menu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
 
-    <!-- Slide-over Cart Drawer -->
-    <div id="cartDrawer" class="fixed inset-0 z-50 bg-black/50 hidden flex justify-end">
-        <div class="bg-white w-full max-w-md h-full p-6 flex flex-col justify-between shadow-2xl animate-fade-in">
-            <div>
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold flex items-center gap-2"><i data-lucide="shopping-cart"></i> Your Cart</h3>
-                    <button onclick="toggleCart()" class="text-gray-500 hover:text-gray-700"><i data-lucide="x" class="w-6 h-6"></i></button>
+    <!-- 1. Native HTML5 Popover: Cart Drawer Window -->
+    <div id="cartDrawer" popover class="fixed inset-y-0 right-0 left-auto w-full max-w-md h-full bg-white shadow-2xl p-6 flex flex-col justify-between border-l">
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">🛒 Your Cart</h3>
+                <button popovertarget="cartDrawer" popovertargetaction="hide" class="text-gray-500 hover:text-gray-700 font-bold text-xl">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
+                    <div>
+                        <h6 class="font-semibold text-sm">Cheeseburger Deluxe</h6>
+                        <p class="text-xs text-gray-500">$8.99 x 1</p>
+                    </div>
+                    <span class="text-red-500 text-xs font-semibold cursor-pointer">Remove</span>
                 </div>
-                <div id="cartItems" class="space-y-4 overflow-y-auto max-h-[35vh]"></div>
-                <!-- Checkout Form Details -->
-                <div class="mt-6 space-y-3 border-t pt-4">
-                    <input type="text" id="custName" placeholder="Your Full Name" class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-orange-500">
-                    <input type="text" id="custMobile" placeholder="Mobile Number" class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-orange-500">
-                    <input type="text" id="custAddress" placeholder="Delivery Address" class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-orange-500">
+                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
+                    <div>
+                        <h6 class="font-semibold text-sm">French Fries</h6>
+                        <p class="text-xs text-gray-500">$3.49 x 1</p>
+                    </div>
+                    <span class="text-red-500 text-xs font-semibold cursor-pointer">Remove</span>
                 </div>
             </div>
-            <div class="border-t pt-4">
-                <div class="flex justify-between font-bold text-lg mb-4">
-                    <span>Total:</span>
-                    <span id="cartTotal" class="text-orange-500">$0.00</span>
+            <!-- Checkout Form -->
+            <div class="mt-6 space-y-3 border-t pt-4">
+                <input type="text" placeholder="Your Full Name" class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-orange-500">
+                <input type="text" placeholder="Delivery Address" class="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-orange-500">
+            </div>
+        </div>
+        <div class="border-t pt-4">
+            <div class="flex justify-between font-bold text-lg mb-4">
+                <span>Total:</span>
+                <span class="text-orange-500">$12.48</span>
+            </div>
+            <button onclick="alert('Order placed successfully (HTML & CSS Demo)!')" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition shadow-lg">Place Order</button>
+        </div>
+    </div>
+
+    <!-- 2. Native HTML5 Popover: Menu Window -->
+    <div id="menuModal" popover class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-6 m-auto border">
+        <div class="flex justify-between items-center mb-4 border-b pb-3">
+            <h3 class="text-xl font-bold">🍽️ Restaurant Menu</h3>
+            <button popovertarget="menuModal" popovertargetaction="hide" class="text-gray-500 font-bold text-xl">&times;</button>
+        </div>
+        <div class="space-y-4 max-h-[60vh] overflow-y-auto">
+            <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
+                <div>
+                    <h5 class="font-bold text-sm">Double Patty Burger</h5>
+                    <p class="text-orange-500 font-semibold text-xs mt-1">$9.99</p>
                 </div>
-                <button onclick="placeOrder()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-orange-500/30">Place Order</button>
+                <button class="bg-orange-500 text-white text-xs px-3 py-1.5 rounded-lg">Add to Cart</button>
+            </div>
+            <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
+                <div>
+                    <h5 class="font-bold text-sm">Crispy Chicken Wings</h5>
+                    <p class="text-orange-500 font-semibold text-xs mt-1">$6.99</p>
+                </div>
+                <button class="bg-orange-500 text-white text-xs px-3 py-1.5 rounded-lg">Add to Cart</button>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
     <footer class="bg-white border-t py-6 text-center text-gray-500 text-sm">
-        <p>&copy; 2026 FoodHub. All rights reserved.</p>
+        <p>&copy; 2026 FoodHub. Built with pure HTML & CSS.</p>
     </footer>
-
-    <!-- Script Application Logic -->
-    <script>
-        const SUPABASE_URL = 'https://kdqyompkfmnocpihfzdj.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkcXlvbXBrZm1ub2NwaWhmemRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzMDkxOTIsImV4cCI6MjEwNDg4NTE5Mn0.4gmwMruyf54ZdXAADEAa9noLZD5JMFyLOzrszUIMVns';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        let vendors = [];
-        let cart = [];
-        let currentVendorId = null;
-        let currentVendorName = "";
-
-        lucide.createIcons();
-
-        // Fetch Data from Supabase (vendors & menus table)
-        async function fetchAppData() {
-            try {
-                const { data: vendorData, error: vendorError } = await supabaseClient.from('vendors').select('*');
-                if (vendorError) throw vendorError;
-
-                const { data: menuData, error: menuError } = await supabaseClient.from('menus').select('*');
-                if (menuError) throw menuError;
-
-                vendors = (vendorData || []).map(res => ({
-                    id: res.id,
-                    name: res.name,
-                    category: res.types || 'Fast Food',
-                    image: res.profile_image_url || 'https://images.unsplash.com/photo-1552566626-52f8b828add9',
-                    menu: (menuData || []).filter(m => m.vendor_id == res.id)
-                }));
-
-                renderVendors(vendors);
-            } catch (err) {
-                console.error("Error loading app data:", err);
-            }
-        }
-
-        function renderVendors(data) {
-            const container = document.getElementById('vendorContainer');
-            container.innerHTML = '';
-            if(data.length === 0) {
-                container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No restaurants found right now.</p>`;
-                return;
-            }
-            data.forEach(res => {
-                container.innerHTML += `
-                    <div onclick="openVendor(${res.id})" class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition cursor-pointer group">
-                        <div class="h-48 overflow-hidden">
-                            <img src="${res.image}" alt="${res.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                        </div>
-                        <div class="p-5">
-                            <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">${res.category}</span>
-                            <h4 class="text-lg font-bold mt-2 text-gray-800">${res.name}</h4>
-                            <div class="flex items-center gap-1 text-yellow-500 mt-2 text-sm font-semibold">
-                                <i data-lucide="star" class="w-4 h-4 fill-current"></i> 5.0 • ${res.menu.length} items
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            lucide.createIcons();
-        }
-
-        function filterData() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const category = document.getElementById('categoryFilter').value;
-
-            const filtered = vendors.filter(res => {
-                const matchesCategory = category === 'all' || res.category.toLowerCase().includes(category.toLowerCase());
-                const matchesSearch = res.name.toLowerCase().includes(query) || res.menu.some(m => m.name.toLowerCase().includes(query));
-                return matchesCategory && matchesSearch;
-            });
-            renderVendors(filtered);
-        }
-
-        function openVendor(id) {
-            const res = vendors.find(r => r.id === id);
-            currentVendorId = res.id;
-            currentVendorName = res.name;
-
-            document.getElementById('vendorSection').classList.add('hidden');
-            document.querySelector('section.hero-bg').classList.add('hidden');
-            
-            const menuSection = document.getElementById('menuSection');
-            menuSection.classList.remove('hidden');
-
-            document.getElementById('vendorHeader').innerHTML = `
-                <img src="${res.image}" class="w-20 h-20 rounded-xl object-cover">
-                <div>
-                    <h3 class="text-2xl font-bold">${res.name}</h3>
-                    <p class="text-gray-500">${res.category} • ⭐ 5.0</p>
-                </div>
-            `;
-
-            const menuContainer = document.getElementById('menuContainer');
-            menuContainer.innerHTML = '';
-            if(res.menu.length === 0) {
-                menuContainer.innerHTML = `<p class="col-span-full text-center text-gray-400 py-10">No menu items added for this restaurant yet.</p>`;
-                return;
-            }
-
-            res.menu.forEach(item => {
-                menuContainer.innerHTML += `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-4">
-                        <img src="${item.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}" class="w-24 h-24 rounded-xl object-cover">
-                        <div class="flex-grow">
-                            <h5 class="font-bold text-gray-800">${item.name}</h5>
-                            <p class="text-orange-500 font-semibold mt-1">$${parseFloat(item.price).toFixed(2)}</p>
-                            <button onclick="addToCart('${item.name}', ${item.price})" class="mt-2 bg-orange-500 hover:bg-orange-600 text-white text-xs px-4 py-2 rounded-lg transition font-medium">Add to Cart</button>
-                        </div>
-                    </div>
-                `;
-            });
-            lucide.createIcons();
-        }
-
-        function backToVendors() {
-            document.getElementById('vendorSection').classList.remove('hidden');
-            document.querySelector('section.hero-bg').classList.remove('hidden');
-            document.getElementById('menuSection').classList.add('hidden');
-        }
-
-        // Cart Actions
-        function toggleCart() {
-            document.getElementById('cartDrawer').classList.toggle('hidden');
-        }
-
-        function addToCart(name, price) {
-            const existing = cart.find(item => item.name === name);
-            if(existing) { existing.qty++; } 
-            else { cart.push({ name, price, qty: 1 }); }
-            updateCartUI();
-            toggleCart();
-        }
-
-        function updateCartUI() {
-            document.getElementById('cartCount').innerText = cart.reduce((sum, item) => sum + item.qty, 0);
-            const container = document.getElementById('cartItems');
-            container.innerHTML = '';
-            let total = 0;
-
-            if(cart.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-10">Your cart is empty.</p>`;
-            }
-
-            cart.forEach((item, index) => {
-                total += item.price * item.qty;
-                container.innerHTML += `
-                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
-                        <div>
-                            <h6 class="font-semibold text-sm">${item.name}</h6>
-                            <p class="text-xs text-gray-500">$${item.price} x ${item.qty}</p>
-                        </div>
-                        <button onclick="cart.splice(${index},1); updateCartUI();" class="text-red-500 text-xs font-semibold hover:underline">Remove</button>
-                    </div>
-                `;
-            });
-            document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
-        }
-
-        // Orders Table এ ডাটা সেভ করা (আপনার নতুন টেবিল কলাম অনুযায়ী)
-        async function placeOrder() {
-            if(cart.length === 0) { alert("Cart is empty!"); return; }
-            const name = document.getElementById('custName').value;
-            const mobile = document.getElementById('custMobile').value;
-            const address = document.getElementById('custAddress').value;
-
-            if(!name || !mobile || !address) { alert("Please fill up all contact details in cart!"); return; }
-
-            const total_amount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-
-            const { error } = await supabaseClient.from('orders').insert([{
-                vendor_id: currentVendorId,
-                customer_name: name,
-                vendor_name: currentVendorName,
-                items: cart,
-                amount: total_amount,
-                delivery_address: address,
-                status: 'Pending'
-            }]);
-
-            if(error) {
-                alert("Error placing order: " + error.message);
-            } else {
-                alert("Order placed successfully!");
-                cart = [];
-                updateCartUI();
-                toggleCart();
-            }
-        }
-
-        // Initial Load
-        fetchAppData();
-    </script>
 </body>
 </html>
