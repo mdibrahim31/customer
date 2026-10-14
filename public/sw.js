@@ -1,5 +1,5 @@
 // Service Worker for FoodHub Customer App
-const CACHE_NAME = 'foodhub-customer-v1';
+const CACHE_NAME = 'foodhub-customer-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
