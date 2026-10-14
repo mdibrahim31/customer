@@ -58,20 +58,6 @@ export const WebApkDownloadButton: React.FC<WebApkDownloadButtonProps> = ({
         return;
       }
 
-      // 3. If running inside an iframe (such as AI Studio preview on mobile),
-      // Android Chrome will not fire beforeinstallprompt inside an iframe.
-      // Open the direct top-level app in Chrome with auto_install=1 so it prompts immediately!
-      const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
-      if (isInIframe) {
-        try {
-          sessionStorage.setItem('trigger_webapk_install', 'true');
-        } catch {}
-        const directUrl = window.location.origin + window.location.pathname + '?auto_install=1';
-        window.open(directUrl, '_blank');
-        setIsInstalling(false);
-        return;
-      }
-
       // 4. Wait a moment for beforeinstallprompt in case browser is still evaluating PWA criteria
       let promptFired = false;
       const promptPromise = new Promise<'accepted' | 'dismissed' | 'timeout'>((resolve) => {
