@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "AdBanner": {
+      "title": "AdBanner",
+      "description": "Promotional banner ad displayed in customer top hero carousel",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 200 },
+        "subtitle": { "type": "string", "maxLength": 300 },
+        "action_text": { "type": "string", "maxLength": 100 },
+        "image_url": { "type": "string", "maxLength": 1000 },
+        "target_vendor_id": { "type": "string" },
+        "target_category": { "type": "string" },
+        "is_active": { "type": "boolean" },
+        "order_index": { "type": "integer" },
+        "created_at": { "type": "string" }
+      },
+      "required": ["id", "title", "image_url", "is_active"]
+    },
+    "Vendor": {
+      "title": "Vendor",
+      "description": "Restaurant partner registered in foodiplace",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "unique_id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "zone": { "type": "string" },
+        "is_active": { "type": "boolean" }
+      },
+      "required": ["id", "name", "phone", "zone"]
+    }
+  },
+  "firestore": {
+    "/ads_banners/{adId}": {
+      "schema": { "$ref": "#/entities/AdBanner" },
+      "description": "Collection of promotional hero banner ads"
+    },
+    "/vendors/{vendorId}": {
+      "schema": { "$ref": "#/entities/Vendor" },
+      "description": "Collection of restaurant partners"
+    }
+  }
+}

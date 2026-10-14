@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default Deny Catch-All Security Gate
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Promotional Ads & Banners
+    match /ads_banners/{adId} {
+      // Anyone can read active promotional ads
+      allow read: if true;
+      
+      // Admin / Authorized users can create, update, delete ads
+      allow write: if isSignedIn() && isValidId(adId);
+    }
+
+    // Vendors
+    match /vendors/{vendorId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(vendorId);
+    }
+  }
+}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgb(234, 88, 12)" />
+      <stop offset="100%" stop-color="rgb(194, 48, 0)" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  <circle cx="256" cy="256" r="170" fill="rgba(255,255,255,0.15)" filter="url(#shadow)" />
+  <text x="256" y="295" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="200" fill="#ffffff" text-anchor="middle" letter-spacing="-2">C</text>
+  <text x="256" y="440" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="34" fill="rgba(255,255,255,0.9)" text-anchor="middle" letter-spacing="2">CUSTOMER</text>
+</svg>

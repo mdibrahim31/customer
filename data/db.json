@@ -1,0 +1,178 @@
+{
+  "supabaseConfig": {
+    "url": "",
+    "anonKey": ""
+  },
+  "pausedRiderIds": [
+    "r0000001-0000-0000-0000-000000000001"
+  ],
+  "pausedVendorIds": [],
+  "customers": [],
+  "addresses": [],
+  "customerCarts": {},
+  "reviews": [
+    {
+      "vendor_id": "a0000005-0000-0000-0000-000000000005",
+      "order_code": "lwtl-2624-cvxx",
+      "customer_name": "Mamun",
+      "rating": 5,
+      "comment": "Fresh and delicious food!",
+      "id": "rev-1791281228590",
+      "created_at": "2026-10-06T10:07:08.590Z"
+    }
+  ],
+  "favorites": [],
+  "otpSenders": [
+    {
+      "id": "test-uuid-123",
+      "phone": "01811223344",
+      "phone_number": "01811223344",
+      "otp": null,
+      "created_at": "2026-10-12T21:04:20.991Z",
+      "updated_at": "2026-10-12T21:04:20.991Z"
+    }
+  ],
+  "zones": [
+    {
+      "id": "zone-001",
+      "name": "Chawkbazar Zone",
+      "bn_name": "চকবাজার জোন",
+      "description": "Chawkbazar, Parade Square, Chatteshwari, Gani Bakery, DC Hill",
+      "center_latitude": 22.359,
+      "center_longitude": 91.838,
+      "radius_km": 2.5,
+      "color": "#E11D48",
+      "is_active": true,
+      "created_at": "2026-10-04T18:11:41.952Z"
+    },
+    {
+      "id": "zone-002",
+      "name": "GEC Zone",
+      "bn_name": "জিইসি জোন",
+      "description": "GEC Circle, CDA Avenue, Dampara, Golpahar, Prabartak Circle",
+      "center_latitude": 22.3595,
+      "center_longitude": 91.8215,
+      "radius_km": 2.5,
+      "color": "#2563EB",
+      "is_active": true,
+      "created_at": "2026-10-04T18:11:41.952Z"
+    },
+    {
+      "id": "zone-003",
+      "name": "Khulshi Zone",
+      "bn_name": "খুলশী জোন",
+      "description": "South Khulshi, North Khulshi, Zakir Hossain Road, Wireless Gate",
+      "center_latitude": 22.365,
+      "center_longitude": 91.815,
+      "radius_km": 2.5,
+      "color": "#7C3AED",
+      "is_active": true,
+      "created_at": "2026-10-04T18:11:41.952Z"
+    },
+    {
+      "id": "zone-004",
+      "name": "Agrabad Zone",
+      "bn_name": "আগ্রাবাদ জোন",
+      "description": "Commercial Area, Badamtali, Sheikh Mujib Road, Chowmuhani",
+      "center_latitude": 22.3275,
+      "center_longitude": 91.812,
+      "radius_km": 3,
+      "color": "#059669",
+      "is_active": true,
+      "created_at": "2026-10-04T18:11:41.952Z"
+    },
+    {
+      "id": "zone-005",
+      "name": "Nasirabad Zone",
+      "bn_name": "নাসিরাবাদ জোন",
+      "description": "Nasirabad Housing, Polytechnic, Baizid Bostami, Sholashahar",
+      "center_latitude": 22.378,
+      "center_longitude": 91.825,
+      "radius_km": 3,
+      "color": "#D97706",
+      "is_active": true,
+      "created_at": "2026-10-04T18:11:41.952Z"
+    },
+    {
+      "id": "zone-006",
+      "name": "Halishahar Zone",
+      "bn_name": "হালিশহর জোন",
+      "description": "Halishahar Housing Estate, Boropool, Rampur, Block A-L",
+      "center_latitude": 22.335,
+      "center_longitude": 91.785,
+      "radius_km": 3.5,
+      "color": "#0D9488",
+      "is_active": true,
+      "created_at": "2026-10-04T18:11:41.952Z"
+    }
+  ],
+  "riders": [
+    {
+      "id": "r0000001-0000-0000-0000-000000000001",
+      "unique_id": "RDR-2001",
+      "name": "Rahim Rider",
+      "phone": "01755500011",
+      "photo_url": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150",
+      "home_address": "Chawkbazar, Chittagong",
+      "zone": "Chawkbazar Zone",
+      "vehicle_type": "Motorcycle",
+      "is_online": false,
+      "is_paused": true,
+      "current_latitude": 22.3588,
+      "current_longitude": 91.8378,
+      "last_location_updated_at": "2026-10-03T10:19:34.659Z",
+      "cash_in_hand": 2500,
+      "is_approved": true,
+      "is_password_set": true,
+      "password": "123",
+      "created_at": "2026-10-03T10:19:34.660Z"
+    },
+    {
+      "id": "r0000002-0000-0000-0000-000000000002",
+      "unique_id": "RDR-2002",
+      "name": "Karim Express",
+      "phone": "01855500022",
+      "photo_url": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+      "home_address": "Khulshi, Chittagong",
+      "zone": "Khulshi Zone",
+      "vehicle_type": "Motorcycle",
+      "is_online": true,
+      "is_paused": false,
+      "current_latitude": 22.3615,
+      "current_longitude": 91.8205,
+      "last_location_updated_at": "2026-10-03T10:19:34.660Z",
+      "cash_in_hand": 1200,
+      "is_approved": true,
+      "is_password_set": true,
+      "password": "123",
+      "created_at": "2026-10-03T10:19:34.660Z"
+    },
+    {
+      "id": "r0000003-0000-0000-0000-000000000003",
+      "unique_id": "RDR-2003",
+      "name": "Shaon Delivery",
+      "phone": "01955500033",
+      "photo_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+      "home_address": "GEC Circle, Chittagong",
+      "zone": "GEC Zone",
+      "vehicle_type": "Bicycle",
+      "is_online": true,
+      "is_paused": false,
+      "current_latitude": 22.3592,
+      "current_longitude": 91.822,
+      "last_location_updated_at": "2026-10-03T10:19:34.660Z",
+      "cash_in_hand": 1800,
+      "is_approved": true,
+      "is_password_set": true,
+      "password": "123",
+      "created_at": "2026-10-03T10:19:34.660Z"
+    }
+  ],
+  "vendors": [],
+  "orders": [],
+  "settings": null,
+  "menuItems": [],
+  "foodCategories": [],
+  "adBanners": [],
+  "updatedAt": "2026-10-12T21:04:20.991Z"
+}

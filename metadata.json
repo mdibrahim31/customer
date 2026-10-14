@@ -1,0 +1,10 @@
+{
+  "name": "foodiplace - Food Delivery System",
+  "description": "foodiplace: All-in-one Cash-on-Delivery Food Delivery System with Customer App, Vendor Dashboard, Rider App, and Admin Control.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
