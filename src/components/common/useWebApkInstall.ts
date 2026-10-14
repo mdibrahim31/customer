@@ -41,7 +41,7 @@ if (typeof window !== 'undefined') {
   if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     const registerServiceWorker = () => {
       navigator.serviceWorker
-        .register('/sw.js', { scope: '/' })
+        .register('./sw.js', { scope: './' })
         .then((reg) => {
           console.log('✅ WebAPK PWA Service Worker active:', reg.scope);
         })

@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="FoodHub Customer" />
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="./manifest.json" />
     <!-- WebAPK / PWA Early Setup -->
     <script type="text/javascript">
       window.deferredPwaPrompt = null;
@@ -32,7 +32,7 @@
       });
       if ('serviceWorker' in navigator) {
         var registerSW = function() {
-          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function() {});
+          navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function() {});
         };
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
           registerSW();
