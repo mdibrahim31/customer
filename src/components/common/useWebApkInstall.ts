@@ -59,6 +59,12 @@ export function useWebApkInstall() {
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
+    const handlePromptReady = () => {
+      if (typeof window !== 'undefined' && (window as any).deferredPwaPrompt) {
+        setDeferredPrompt((window as any).deferredPwaPrompt);
+      }
+    };
+
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
@@ -68,6 +74,7 @@ export function useWebApkInstall() {
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('pwa-prompt-ready', handlePromptReady);
     window.addEventListener('appinstalled', handleAppInstalled);
 
     if (typeof window !== 'undefined' && (window as any).deferredPwaPrompt) {
@@ -76,12 +83,23 @@ export function useWebApkInstall() {
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('pwa-prompt-ready', handlePromptReady);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
   const install = async (): Promise<boolean> => {
-    const promptEvent = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPwaPrompt : null);
+    let promptEvent = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPwaPrompt : null);
+
+    // If not immediately available, retry quickly for up to 1 second
+    if (!promptEvent) {
+      for (let i = 0; i < 10; i++) {
+        await new Promise((r) => setTimeout(r, 100));
+        promptEvent = (window as any).deferredPwaPrompt || deferredPrompt;
+        if (promptEvent) break;
+      }
+    }
+
     if (!promptEvent) return false;
     try {
       await promptEvent.prompt();
