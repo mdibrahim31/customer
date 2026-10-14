@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Download, 
   Loader2, 
   Smartphone, 
   MoreVertical, 
-  CheckCircle2, 
   X, 
-  ArrowRight, 
+  ArrowUpRight,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Info
 } from 'lucide-react';
 import { useWebApkInstall } from './useWebApkInstall';
 
@@ -61,7 +61,7 @@ export const WebApkDownloadButton: React.FC<WebApkDownloadButtonProps> = ({
       if (promptObj || isInstallable) {
         const res = await install();
         if (res === 'accepted') {
-          showToast('🎉 WebAPK অ্যাপ ড্রয়ারে ইন্সটল হচ্ছে! কিছুক্ষণ অপেক্ষা করুন...', 'success');
+          showToast('🎉 WebAPK অ্যাপ ড্রয়ারে ইন্সটল হচ্ছে! আপনার নোটিফিকেশন বার চেক করুন...', 'success');
           setIsInstalling(false);
           return;
         } else if (res === 'dismissed') {
@@ -85,38 +85,8 @@ export const WebApkDownloadButton: React.FC<WebApkDownloadButtonProps> = ({
         return;
       }
 
-      // 4. Brief 350ms wait in case beforeinstallprompt is in transit
-      let promptFired = false;
-      const promptPromise = new Promise<'accepted' | 'dismissed' | 'timeout'>((resolve) => {
-        const timeout = setTimeout(() => {
-          window.removeEventListener('webapk-prompt-ready', handler);
-          resolve('timeout');
-        }, 400);
-
-        const handler = async () => {
-          promptFired = true;
-          clearTimeout(timeout);
-          window.removeEventListener('webapk-prompt-ready', handler);
-          const outcome = await install();
-          resolve(outcome === 'unsupported' ? 'timeout' : outcome);
-        };
-
-        window.addEventListener('webapk-prompt-ready', handler);
-      });
-
-      const outcome = await promptPromise;
-      if (outcome === 'accepted') {
-        showToast('🎉 WebAPK অ্যাপ ড্রয়ারে ইন্সটল হচ্ছে! কিছুক্ষণ অপেক্ষা করুন...', 'success');
-        setIsInstalling(false);
-        return;
-      } else if (outcome === 'dismissed') {
-        showToast('ইনস্টলেশন বাতিল করা হয়েছে।', 'info');
-        setIsInstalling(false);
-        return;
-      }
-
-      // 5. If browser did not offer automatic prompt or it was dismissed previously:
-      // Show the dedicated visual step-by-step WebAPK install modal
+      // 4. If prompt is not immediately ready (e.g. Chrome suppressed automatic prompt due to repeat visits),
+      // Open the visual step-by-step guide explaining how to install via Chrome's 3-dot menu
       setShowGuideModal(true);
     } catch (err) {
       console.warn('[WebAPK] Install error:', err);
@@ -126,22 +96,18 @@ export const WebApkDownloadButton: React.FC<WebApkDownloadButtonProps> = ({
     }
   };
 
-  const handleModalTryAgain = async () => {
+  const handleDirectInstallFromModal = async () => {
     const promptObj = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPwaPrompt : null);
     if (promptObj) {
       const res = await install();
       if (res === 'accepted') {
         setShowGuideModal(false);
-        showToast('🎉 WebAPK অ্যাপ ড্রয়ারে ইন্সটল হচ্ছে!', 'success');
+        showToast('🎉 WebAPK অ্যাপ ড্রয়ারে ইন্সটল হচ্ছে! কিছুক্ষণ অপেক্ষা করুন...', 'success');
+      } else if (res === 'dismissed') {
+        showToast('ইনস্টলেশন বাতিল করা হয়েছে।', 'info');
       }
     } else {
-      // Set session flag and reload to trigger fresh prompt
-      try {
-        if (typeof window !== 'undefined' && window.sessionStorage) {
-          window.sessionStorage.setItem('trigger_webapk_install', 'true');
-        }
-      } catch (e) {}
-      window.location.reload();
+      showToast('⚠️ ব্রাউজারের উপরে ডানদিকের ৩টি ডট (⋮) চাপুন এবং "Install app" চাপুন।', 'info');
     }
   };
 
@@ -201,23 +167,33 @@ export const WebApkDownloadButton: React.FC<WebApkDownloadButtonProps> = ({
 
               <h3 className="text-xl font-black tracking-tight">{displayAppName} WebAPK</h3>
               <p className="text-orange-100 text-xs font-semibold mt-1">
-                মোবাইল ফোনের App Drawer এ ইন্সটল করুন
+                মোবাইল ফোনের App Drawer এ যুক্ত করার নিয়ম
               </p>
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 space-y-4 text-slate-800">
-              <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-2xl flex items-start space-x-2.5 text-xs text-amber-900 leading-relaxed font-medium">
-                <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <span>
-                  WebAPK ইন্সটল করলে অ্যাপটি সরাসরি মোবাইল ফোনের <strong>App Drawer</strong> এবং হোমস্ক্রিনে চলে আসবে এবং যেকোনো সাধারণ অ্যান্ড্রয়েড অ্যাপের মতো কাজ করবে।
-                </span>
+            <div className="p-5 space-y-4 text-slate-800">
+              {/* Highlight callout pointing to top right Chrome 3 dots */}
+              <div className="p-3.5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 border-2 border-dashed border-orange-400 rounded-2xl relative">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full inline-block">
+                      মূল ধাপ (Most Important)
+                    </span>
+                    <p className="text-xs font-black text-slate-900 leading-snug">
+                      Chrome ব্রাউজারের উপরে ডানদিকের কোণায় থাকা <strong>৩টি ডট (⋮)</strong> মেনু চাপুন
+                    </p>
+                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-orange-600 text-white flex items-center justify-center shrink-0 shadow-md animate-bounce">
+                    <ArrowUpRight className="w-5 h-5 stroke-[3]" />
+                  </div>
+                </div>
               </div>
 
               {/* Step-by-Step Instructions */}
-              <div className="space-y-2.5 pt-1">
-                <h4 className="text-xs font-black uppercase tracking-wider text-slate-500">
-                  {isIOS ? 'iPhone / iOS এ ইন্সটল করার নিয়ম:' : 'Chrome ব্রাউজারে ৩টি সহজ ধাপে ইন্সটল:'}
+              <div className="space-y-2 pt-1">
+                <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+                  {isIOS ? 'iPhone / iOS এ ইন্সটল:' : '৩টি সহজ ধাপে WebAPK ইনস্টল:'}
                 </h4>
 
                 {isIOS ? (
@@ -236,22 +212,22 @@ export const WebApkDownloadButton: React.FC<WebApkDownloadButtonProps> = ({
                     <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
                       <span className="w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-black text-xs shrink-0">1</span>
                       <div className="flex-1 flex items-center justify-between">
-                        <span>ব্রাউজারের উপরে ডানদিকের <strong>৩টি ডট</strong> মেনুতে চাপুন</span>
-                        <MoreVertical className="w-4 h-4 text-slate-400 shrink-0" />
+                        <span>ব্রাউজারের উপরে ডানদিকের <strong>৩টি ডট</strong> চাপুন</span>
+                        <MoreVertical className="w-4 h-4 text-slate-600 shrink-0" />
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                      <span className="w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-black text-xs shrink-0">2</span>
+                    <div className="flex items-center space-x-2.5 p-2.5 bg-orange-50 rounded-xl border border-orange-200">
+                      <span className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center font-black text-xs shrink-0">2</span>
                       <div className="flex-1 flex items-center justify-between">
                         <span>মেনু থেকে <strong>"Install app"</strong> (বা <strong>"Add to Home screen"</strong>) চাপুন</span>
                         <Download className="w-4 h-4 text-orange-600 shrink-0" />
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2.5 p-2.5 bg-orange-50/60 rounded-xl border border-orange-200/60">
-                      <span className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center font-black text-xs shrink-0">3</span>
-                      <span><strong>"Install"</strong> বাটনে চাপ দিলেই App Drawer এ WebAPK তৈরি হয়ে যাবে!</span>
+                    <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-xs shrink-0">3</span>
+                      <span><strong>"Install"</strong> চাপলেই ফোনের <strong>App Drawer</strong> এ WebAPK ইনস্টল হয়ে যাবে!</span>
                     </div>
                   </div>
                 )}
@@ -259,22 +235,42 @@ export const WebApkDownloadButton: React.FC<WebApkDownloadButtonProps> = ({
 
               {/* Action Buttons */}
               <div className="pt-2 space-y-2">
-                <button
-                  type="button"
-                  onClick={handleModalTryAgain}
-                  className="w-full py-3.5 px-4 bg-orange-600 hover:bg-orange-700 active:scale-98 text-white rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center space-x-2 shadow-lg shadow-orange-600/25 transition cursor-pointer"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>এখনই ইন্সটল করার চেষ্টা করুন</span>
-                </button>
+                {Boolean(deferredPrompt || (typeof window !== 'undefined' && (window as any).deferredPwaPrompt)) ? (
+                  <button
+                    type="button"
+                    onClick={handleDirectInstallFromModal}
+                    className="w-full py-3.5 px-4 bg-orange-600 hover:bg-orange-700 active:scale-98 text-white rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center space-x-2 shadow-lg shadow-orange-600/25 transition cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>📲 এক ক্লিকে Install করুন</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      showToast('👉 ব্রাউজারের উপরে ডানদিকের ৩টি ডট (⋮) চাপুন এবং "Install app" চাপুন।', 'info');
+                      setShowGuideModal(false);
+                    }}
+                    className="w-full py-3.5 px-4 bg-orange-600 hover:bg-orange-700 active:scale-98 text-white rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center space-x-2 shadow-lg shadow-orange-600/25 transition cursor-pointer"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                    <span>Chrome মেনু দেখে Install করব</span>
+                  </button>
+                )}
 
                 <button
                   type="button"
                   onClick={() => setShowGuideModal(false)}
                   className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold text-xs transition cursor-pointer"
                 >
-                  ঠিক আছে, বুঝেছি
+                  বন্ধ করুন
                 </button>
+              </div>
+
+              {/* Hint */}
+              <div className="flex items-center space-x-1.5 text-[10px] text-slate-400 pt-1 justify-center">
+                <Info className="w-3.5 h-3.5 shrink-0" />
+                <span>Google Chrome WebAPK অটোমেটিক অ্যাপ ড্রয়ারে অ্যাপ আইকন তৈরি করে</span>
               </div>
             </div>
           </div>

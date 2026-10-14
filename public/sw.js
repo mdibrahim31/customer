@@ -1,13 +1,13 @@
 // Unified Service Worker for FoodHub WebAPK & PWA
-const CACHE_NAME = 'foodhub-webapk-v4';
+const CACHE_NAME = 'foodhub-webapk-v5';
 
 const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icons/icon-customer-192.png',
-  './icons/icon-customer-512.png',
-  './icons/icon-customer.svg'
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/icons/icon-customer-192.png',
+  '/icons/icon-customer-512.png',
+  '/icons/icon-customer.svg'
 ];
 
 self.addEventListener('install', (event) => {
@@ -16,7 +16,7 @@ self.addEventListener('install', (event) => {
       return Promise.allSettled(
         ASSETS_TO_CACHE.map((url) =>
           cache.add(url).catch((err) => {
-            console.warn('[SW] Cache prefetch notice for:', url, err);
+            console.warn('[SW] Cache item note for:', url, err);
           })
         )
       );
@@ -30,7 +30,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME && (key.startsWith('foodiplace-') || key.startsWith('foodhub-'))) {
+          if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
         })
@@ -41,7 +41,6 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests and skip backend API / database endpoints
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/socket.io/')) return;
@@ -60,10 +59,11 @@ self.addEventListener('fetch', (event) => {
       .catch(async () => {
         const cached = await caches.match(event.request);
         if (cached) return cached;
-        if (event.request.headers.get('accept')?.includes('text/html')) {
-          const fallback = (await caches.match('./index.html')) || (await caches.match('./')) || (await caches.match('/'));
+        if (event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html')) {
+          const fallback = (await caches.match('/index.html')) || (await caches.match('/'));
           if (fallback) return fallback;
         }
+        return new Response('Offline', { status: 200, headers: { 'Content-Type': 'text/plain' } });
       })
   );
 });
