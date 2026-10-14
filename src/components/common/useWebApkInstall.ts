@@ -1,44 +1,71 @@
 import { useEffect, useState, useCallback } from 'react';
 
-interface BeforeInstallPromptEvent extends Event {
+export interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
 }
 
 // Global cached deferred prompt so it survives re-renders and page navigation within SPA
-let globalDeferredPrompt: BeforeInstallPromptEvent | null = null;
+let globalDeferredPrompt: BeforeInstallPromptEvent | null = 
+  typeof window !== 'undefined' ? (window as any).deferredPwaPrompt || null : null;
 
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeinstallprompt', (e: Event) => {
     e.preventDefault();
+    (window as any).deferredPwaPrompt = e;
     globalDeferredPrompt = e as BeforeInstallPromptEvent;
     window.dispatchEvent(new CustomEvent('webapk-prompt-ready'));
+
+    // Check if auto_install was requested (e.g. opened out of iframe)
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldAutoInstall = urlParams.get('auto_install') === '1' || 
+      sessionStorage.getItem('trigger_webapk_install') === 'true';
+
+    if (shouldAutoInstall) {
+      try {
+        sessionStorage.removeItem('trigger_webapk_install');
+      } catch {}
+      setTimeout(() => {
+        (e as BeforeInstallPromptEvent).prompt().catch(() => {});
+      }, 300);
+    }
   });
 
   window.addEventListener('appinstalled', () => {
     globalDeferredPrompt = null;
+    (window as any).deferredPwaPrompt = null;
     window.dispatchEvent(new CustomEvent('webapk-installed'));
   });
 
-  // Ensure service worker is registered with relative path support for GitHub Pages
-  if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
-    window.addEventListener('load', () => {
+  // Ensure service worker is registered immediately for WebAPK installability
+  if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    const registerServiceWorker = () => {
       navigator.serviceWorker
-        .register('./sw.js')
+        .register('/sw.js', { scope: '/' })
         .then((reg) => {
           console.log('✅ WebAPK PWA Service Worker active:', reg.scope);
         })
-        .catch(() => {
-          navigator.serviceWorker.register('/sw.js').catch((err) => {
-            console.warn('[WebAPK] Service worker registration note:', err);
-          });
+        .catch((err) => {
+          console.warn('[WebAPK] Service worker registration note:', err);
         });
-    });
+    };
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      registerServiceWorker();
+    } else {
+      window.addEventListener('DOMContentLoaded', registerServiceWorker);
+      window.addEventListener('load', registerServiceWorker);
+    }
   }
 }
 
 export function useWebApkInstall() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(() => globalDeferredPrompt);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(() => {
+    if (typeof window !== 'undefined' && (window as any).deferredPwaPrompt) {
+      return (window as any).deferredPwaPrompt;
+    }
+    return globalDeferredPrompt;
+  });
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
@@ -63,7 +90,8 @@ export function useWebApkInstall() {
     }
 
     const onPromptReady = () => {
-      setDeferredPrompt(globalDeferredPrompt);
+      const p = (window as any).deferredPwaPrompt || globalDeferredPrompt;
+      setDeferredPrompt(p);
     };
 
     const onInstalled = () => {
@@ -74,19 +102,18 @@ export function useWebApkInstall() {
     window.addEventListener('webapk-prompt-ready', onPromptReady);
     window.addEventListener('webapk-installed', onInstalled);
 
-    // Initial check in case it was captured before hook mounted
-    if (globalDeferredPrompt && !deferredPrompt) {
-      setDeferredPrompt(globalDeferredPrompt);
+    if ((window as any).deferredPwaPrompt || globalDeferredPrompt) {
+      setDeferredPrompt((window as any).deferredPwaPrompt || globalDeferredPrompt);
     }
 
     return () => {
       window.removeEventListener('webapk-prompt-ready', onPromptReady);
       window.removeEventListener('webapk-installed', onInstalled);
     };
-  }, [deferredPrompt]);
+  }, []);
 
   const install = useCallback(async (): Promise<'accepted' | 'dismissed' | 'unsupported'> => {
-    const promptEvent = deferredPrompt || globalDeferredPrompt;
+    const promptEvent = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPwaPrompt : null) || globalDeferredPrompt;
     if (!promptEvent) {
       return 'unsupported';
     }
@@ -98,6 +125,9 @@ export function useWebApkInstall() {
         setIsInstalled(true);
         setDeferredPrompt(null);
         globalDeferredPrompt = null;
+        if (typeof window !== 'undefined') {
+          (window as any).deferredPwaPrompt = null;
+        }
         return 'accepted';
       }
       return 'dismissed';
@@ -108,10 +138,11 @@ export function useWebApkInstall() {
   }, [deferredPrompt]);
 
   return {
-    isInstallable: Boolean(deferredPrompt || globalDeferredPrompt),
+    isInstallable: Boolean(deferredPrompt || (typeof window !== 'undefined' && (window as any).deferredPwaPrompt) || globalDeferredPrompt),
     isInstalled,
     isIOS,
     isAndroid,
     install,
+    deferredPrompt: deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPwaPrompt : null) || globalDeferredPrompt,
   };
 }

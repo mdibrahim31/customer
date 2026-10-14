@@ -4,7 +4,7 @@ import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+const PORT = 3000;
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -144,8 +144,19 @@ const INITIAL_SERVER_STATE: ServerState = {
   riders: [],
   vendors: [],
   orders: [],
-  settings: null,
   menuItems: [],
+  settings: {
+    id: 'set-001',
+    per_km_delivery_charge: 15.0,
+    base_delivery_charge: 30.0,
+    rider_match_radius_km: 1.0,
+    currency: 'BDT',
+    currency_symbol: '৳',
+    is_active: true,
+    updated_at: new Date().toISOString(),
+    banner_slide_interval_seconds: 3,
+    banner_slide_auto_play: true
+  },
   foodCategories: [],
   adBanners: [],
   updatedAt: new Date().toISOString()

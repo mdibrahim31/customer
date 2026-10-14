@@ -1,30 +1,13 @@
-// Unified Service Worker for foodiplace Multi-Portal WebAPK & PWA
-const CACHE_NAME = 'foodiplace-pwa-v1';
+// Unified Service Worker for foodiplace WebAPK & PWA
+const CACHE_NAME = 'foodiplace-webapk-v2';
 
 const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './customer.html',
-  './vendor.html',
-  './rider.html',
-  './admin.html',
-  './subadmin.html',
-  './orders.html',
-  './manifest.json',
-  './manifest.customer.json',
-  './manifest.vendor.json',
-  './manifest.rider.json',
-  './manifest.admin.json',
-  './manifest.subadmin.json',
-  './manifest.orders.json',
-  './icons/icon-main-192.png',
-  './icons/icon-main-512.png',
-  './icons/icon-rider-192.png',
-  './icons/icon-vendor-192.png',
-  './icons/icon-admin-192.png',
-  './icons/icon-subadmin-192.png',
-  './icons/icon-orders-192.png',
-  './icons/icon-customer-192.png'
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/icons/icon-customer-192.png',
+  '/icons/icon-customer-512.png',
+  '/icons/icon-customer.svg'
 ];
 
 self.addEventListener('install', (event) => {
