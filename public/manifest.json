@@ -1,42 +1,42 @@
 {
-  "id": "/",
-  "name": "FoodHub - Customer Food Ordering",
-  "short_name": "FoodHub",
-  "description": "FoodHub: Order delicious food with cash on delivery from local restaurants.",
-  "start_url": "/",
-  "scope": "/",
+  "id": "./",
+  "name": "foodiplace Customer",
+  "short_name": "Customer App",
+  "description": "foodiplace Customer App: Order delicious food with cash on delivery from local restaurants.",
+  "start_url": "./?source=webapk",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#ea580c",
-  "prefer_related_applications": false,
+  "categories": ["food", "delivery", "shopping"],
   "icons": [
     {
-      "src": "/icons/icon-customer-192.png",
+      "src": "icons/icon-customer-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-customer-192.png",
+      "src": "icons/icon-customer-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/icon-customer-512.png",
+      "src": "icons/icon-customer-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-customer-512.png",
+      "src": "icons/icon-customer-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/icon-customer.svg",
+      "src": "icons/icon-customer.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

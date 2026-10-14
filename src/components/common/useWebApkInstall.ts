@@ -1,27 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
 export interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
-}
-
-// Global cached deferred prompt so it survives re-renders and page navigation within SPA
-let globalDeferredPrompt: BeforeInstallPromptEvent | null = 
-  typeof window !== 'undefined' ? (window as any).deferredPwaPrompt || null : null;
-
-if (typeof window !== 'undefined') {
-  window.addEventListener('beforeinstallprompt', (e: Event) => {
-    e.preventDefault();
-    globalDeferredPrompt = e as BeforeInstallPromptEvent;
-    (window as any).deferredPwaPrompt = e;
-  });
-
-  window.addEventListener('appinstalled', () => {
-    globalDeferredPrompt = null;
-    if ((window as any).deferredPwaPrompt) {
-      (window as any).deferredPwaPrompt = null;
-    }
-  });
 }
 
 export function useWebApkInstall() {
@@ -29,95 +10,102 @@ export function useWebApkInstall() {
     if (typeof window !== 'undefined' && (window as any).deferredPwaPrompt) {
       return (window as any).deferredPwaPrompt;
     }
-    return globalDeferredPrompt;
+    return null;
   });
-  const [isInstalled, setIsInstalled] = useState(false);
+
+  const [isInstalled, setIsInstalled] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return Boolean(
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: fullscreen)').matches ||
+      window.matchMedia('(display-mode: minimal-ui)').matches ||
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true ||
+      document.referrer.includes('android-app://') ||
+      window.location.search.includes('source=webapk') ||
+      window.location.search.includes('source=pwa')
+    );
+  });
+
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
 
   useEffect(() => {
-    // Check standalone mode (already running as installed WebAPK or iOS home screen)
     const checkStandalone = () => {
-      if (typeof window === 'undefined') return false;
-      return (
-        window.matchMedia('(display-mode: standalone)').matches ||
-        (window.navigator as unknown as { standalone?: boolean }).standalone === true ||
-        document.referrer.includes('android-app://')
-      );
+      const isStandalone =
+        typeof window !== 'undefined' &&
+        (window.matchMedia('(display-mode: standalone)').matches ||
+          window.matchMedia('(display-mode: fullscreen)').matches ||
+          window.matchMedia('(display-mode: minimal-ui)').matches ||
+          (window.navigator as unknown as { standalone?: boolean }).standalone === true ||
+          document.referrer.includes('android-app://') ||
+          window.location.search.includes('source=webapk') ||
+          window.location.search.includes('source=pwa'));
+      setIsInstalled(Boolean(isStandalone));
     };
 
-    setIsInstalled(checkStandalone());
+    checkStandalone();
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    mediaQuery.addEventListener('change', checkStandalone);
 
     if (typeof window !== 'undefined') {
-      const ua = window.navigator.userAgent.toLowerCase();
-      setIsIOS(/iphone|ipad|ipod/.test(ua));
-      setIsAndroid(/android/.test(ua));
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      setIsIOS(/iphone|ipad|ipod/.test(userAgent));
+      setIsAndroid(/android/.test(userAgent));
     }
 
-    const syncPrompt = (e?: Event) => {
-      if (e && 'prompt' in e) {
-        globalDeferredPrompt = e as BeforeInstallPromptEvent;
-        (window as any).deferredPwaPrompt = e;
-      }
-      const p = (window as any).deferredPwaPrompt || globalDeferredPrompt;
-      setDeferredPrompt(p);
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      (window as any).deferredPwaPrompt = e;
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
-    const onInstalled = () => {
+    const handleAppInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
-      globalDeferredPrompt = null;
       if (typeof window !== 'undefined') {
         (window as any).deferredPwaPrompt = null;
       }
     };
 
-    window.addEventListener('beforeinstallprompt', syncPrompt);
-    window.addEventListener('webapk-prompt-ready', syncPrompt);
-    window.addEventListener('appinstalled', onInstalled);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
 
-    syncPrompt();
+    if (typeof window !== 'undefined' && (window as any).deferredPwaPrompt) {
+      setDeferredPrompt((window as any).deferredPwaPrompt);
+    }
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', syncPrompt);
-      window.removeEventListener('webapk-prompt-ready', syncPrompt);
-      window.removeEventListener('appinstalled', onInstalled);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
-  const install = useCallback(async (): Promise<'accepted' | 'dismissed' | 'unsupported'> => {
-    const promptEvent = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPwaPrompt : null) || globalDeferredPrompt;
-    if (!promptEvent) {
-      return 'unsupported';
-    }
-
+  const install = async (): Promise<boolean> => {
+    const promptEvent = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPwaPrompt : null);
+    if (!promptEvent) return false;
     try {
       await promptEvent.prompt();
       const { outcome } = await promptEvent.userChoice;
       if (outcome === 'accepted') {
         setIsInstalled(true);
         setDeferredPrompt(null);
-        globalDeferredPrompt = null;
         if (typeof window !== 'undefined') {
           (window as any).deferredPwaPrompt = null;
         }
-        return 'accepted';
+        return true;
       }
-      return 'dismissed';
     } catch (err) {
-      console.warn('[WebAPK] Install error:', err);
-      return 'unsupported';
+      console.warn('Install prompt error:', err);
     }
-  }, [deferredPrompt]);
-
-  const currentPrompt = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPwaPrompt : null) || globalDeferredPrompt;
+    return false;
+  };
 
   return {
-    isInstallable: Boolean(currentPrompt),
+    isInstallable: Boolean(deferredPrompt || (typeof window !== 'undefined' && (window as any).deferredPwaPrompt)),
     isInstalled,
     isIOS,
     isAndroid,
     install,
-    deferredPrompt: currentPrompt,
+    deferredPrompt: deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPwaPrompt : null),
   };
 }

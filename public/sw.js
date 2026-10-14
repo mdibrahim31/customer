@@ -1,25 +1,20 @@
-// Unified Service Worker for FoodHub WebAPK & PWA
-const CACHE_NAME = 'foodhub-webapk-v5';
-
+// Service Worker for FoodHub Customer App
+const CACHE_NAME = 'foodhub-customer-v1';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-customer-192.png',
-  '/icons/icon-customer-512.png',
-  '/icons/icon-customer.svg'
+  './',
+  './index.html',
+  './manifest.json',
+  './icons/icon-customer-192.png',
+  './icons/icon-customer-512.png',
+  './icons/icon-customer.svg'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return Promise.allSettled(
-        ASSETS_TO_CACHE.map((url) =>
-          cache.add(url).catch((err) => {
-            console.warn('[SW] Cache item note for:', url, err);
-          })
-        )
-      );
+      return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
+        console.warn('SW pre-cache non-fatal notice:', err);
+      });
     })
   );
   self.skipWaiting();
@@ -30,7 +25,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
+          if (key !== CACHE_NAME && (key.startsWith('foodhub-customer-') || key.startsWith('foodiplace-'))) {
             return caches.delete(key);
           }
         })
@@ -41,6 +36,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Only handle GET requests and skip API / WebSocket requests
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/socket.io/')) return;
@@ -56,14 +52,13 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       })
-      .catch(async () => {
-        const cached = await caches.match(event.request);
-        if (cached) return cached;
-        if (event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html')) {
-          const fallback = (await caches.match('/index.html')) || (await caches.match('/'));
-          if (fallback) return fallback;
-        }
-        return new Response('Offline', { status: 200, headers: { 'Content-Type': 'text/plain' } });
+      .catch(() => {
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          if (event.request.headers.get('accept')?.includes('text/html')) {
+            return caches.match('./index.html');
+          }
+        });
       })
   );
 });
