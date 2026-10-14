@@ -10,53 +10,7 @@ let globalDeferredPrompt: BeforeInstallPromptEvent | null =
   typeof window !== 'undefined' ? (window as any).deferredPwaPrompt || null : null;
 
 if (typeof window !== 'undefined') {
-  window.addEventListener('beforeinstallprompt', (e: Event) => {
-    e.preventDefault();
-    (window as any).deferredPwaPrompt = e;
-    globalDeferredPrompt = e as BeforeInstallPromptEvent;
-    window.dispatchEvent(new CustomEvent('webapk-prompt-ready'));
 
-    // Check if auto_install was requested (e.g. opened out of iframe)
-    const urlParams = new URLSearchParams(window.location.search);
-    const shouldAutoInstall = urlParams.get('auto_install') === '1' || 
-      sessionStorage.getItem('trigger_webapk_install') === 'true';
-
-    if (shouldAutoInstall) {
-      try {
-        sessionStorage.removeItem('trigger_webapk_install');
-      } catch {}
-      setTimeout(() => {
-        (e as BeforeInstallPromptEvent).prompt().catch(() => {});
-      }, 300);
-    }
-  });
-
-  window.addEventListener('appinstalled', () => {
-    globalDeferredPrompt = null;
-    (window as any).deferredPwaPrompt = null;
-    window.dispatchEvent(new CustomEvent('webapk-installed'));
-  });
-
-  // Ensure service worker is registered immediately for WebAPK installability
-  if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-    const registerServiceWorker = () => {
-      navigator.serviceWorker
-        .register('./sw.js', { scope: './' })
-        .then((reg) => {
-          console.log('✅ WebAPK PWA Service Worker active:', reg.scope);
-        })
-        .catch((err) => {
-          console.warn('[WebAPK] Service worker registration note:', err);
-        });
-    };
-
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      registerServiceWorker();
-    } else {
-      window.addEventListener('DOMContentLoaded', registerServiceWorker);
-      window.addEventListener('load', registerServiceWorker);
-    }
-  }
 }
 
 export function useWebApkInstall() {
