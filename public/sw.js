@@ -1,21 +1,25 @@
-// Unified Service Worker for foodiplace WebAPK & PWA
-const CACHE_NAME = 'foodiplace-webapk-v2';
+// Unified Service Worker for FoodHub WebAPK & PWA
+const CACHE_NAME = 'foodhub-webapk-v4';
 
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-customer-192.png',
-  '/icons/icon-customer-512.png',
-  '/icons/icon-customer.svg'
+  './',
+  './index.html',
+  './manifest.json',
+  './icons/icon-customer-192.png',
+  './icons/icon-customer-512.png',
+  './icons/icon-customer.svg'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
-        console.warn('[SW] Pre-cache notice:', err);
-      });
+      return Promise.allSettled(
+        ASSETS_TO_CACHE.map((url) =>
+          cache.add(url).catch((err) => {
+            console.warn('[SW] Cache prefetch notice for:', url, err);
+          })
+        )
+      );
     })
   );
   self.skipWaiting();
@@ -37,7 +41,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests and skip API / WebSocket / database sync
+  // Only handle GET requests and skip backend API / database endpoints
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/socket.io/')) return;
@@ -53,13 +57,13 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       })
-      .catch(() => {
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) return cachedResponse;
-          if (event.request.headers.get('accept')?.includes('text/html')) {
-            return caches.match('/index.html');
-          }
-        });
+      .catch(async () => {
+        const cached = await caches.match(event.request);
+        if (cached) return cached;
+        if (event.request.headers.get('accept')?.includes('text/html')) {
+          const fallback = (await caches.match('./index.html')) || (await caches.match('./')) || (await caches.match('/'));
+          if (fallback) return fallback;
+        }
       })
   );
 });

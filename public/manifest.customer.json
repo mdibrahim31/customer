@@ -1,24 +1,38 @@
 {
+  "id": "./",
   "name": "FoodHub - Customer Food Ordering",
-  "short_name": "Customer",
-  "start_url": "./customer.html",
+  "short_name": "FoodHub",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#ea580c",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "./icons/icon-customer-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-customer-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "./icons/icon-customer-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-customer-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "./icons/icon-customer.svg",

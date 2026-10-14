@@ -1,14 +1,15 @@
 {
-  "id": ".",
-  "name": "foodiplace - Customer Food Delivery",
-  "short_name": "foodiplace",
-  "description": "foodiplace Customer App: Order delicious food with cash on delivery from local restaurants.",
-  "start_url": ".",
-  "scope": ".",
+  "id": "./",
+  "name": "FoodHub - Customer Food Ordering",
+  "short_name": "FoodHub",
+  "description": "FoodHub: Order delicious food with cash on delivery from local restaurants.",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#ea580c",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "./icons/icon-customer-192.png",

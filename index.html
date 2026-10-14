@@ -18,6 +18,7 @@
         e.preventDefault();
         window.deferredPwaPrompt = e;
         window.dispatchEvent(new CustomEvent('webapk-prompt-ready'));
+        console.log('[WebAPK] Prompt ready & captured');
         var params = new URLSearchParams(window.location.search);
         if (params.get('auto_install') === '1' || (window.sessionStorage && window.sessionStorage.getItem('trigger_webapk_install') === 'true')) {
           try { window.sessionStorage.removeItem('trigger_webapk_install'); } catch (err) {}
@@ -29,15 +30,23 @@
       window.addEventListener('appinstalled', function() {
         window.deferredPwaPrompt = null;
         window.dispatchEvent(new CustomEvent('webapk-installed'));
+        console.log('[WebAPK] App successfully installed to App Drawer');
       });
       if ('serviceWorker' in navigator) {
         var registerSW = function() {
-          navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function() {});
+          navigator.serviceWorker.register('./sw.js', { scope: './' })
+            .then(function(reg) {
+              console.log('[SW] Registered scope:', reg.scope);
+            })
+            .catch(function(err) {
+              console.warn('[SW] Registration notice:', err);
+            });
         };
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
           registerSW();
         } else {
           window.addEventListener('DOMContentLoaded', registerSW);
+          window.addEventListener('load', registerSW);
         }
       }
     </script>

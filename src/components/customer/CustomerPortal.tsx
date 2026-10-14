@@ -914,7 +914,7 @@ export const CustomerPortal: React.FC = () => {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative">
         {/* WebAPK Download Button in Top-Right */}
         <WebApkDownloadButton
-          appName="foodiplace Customer"
+          appName="FoodHub Customer"
           portalType="customer"
           className="absolute top-4 right-4 z-10"
         />
@@ -1710,7 +1710,7 @@ export const CustomerPortal: React.FC = () => {
               <h1 className="text-2xl font-black text-slate-900 tracking-tight">Account</h1>
               <div className="flex items-center space-x-2">
                 <WebApkDownloadButton
-                  appName="foodiplace Customer"
+                  appName="FoodHub Customer"
                   portalType="customer"
                   className="relative shrink-0"
                 />
@@ -1730,7 +1730,7 @@ export const CustomerPortal: React.FC = () => {
                 <div className="bg-gradient-to-br from-orange-50 via-white to-amber-50 rounded-3xl p-6 border border-orange-200/90 shadow-lg relative space-y-4">
                   {/* WebAPK Download Button in Top-Right of Customer Login Card */}
                   <WebApkDownloadButton
-                    appName="foodiplace Customer"
+                    appName="FoodHub Customer"
                     portalType="customer"
                     className="absolute top-4 right-4 z-10"
                   />
@@ -2178,7 +2178,7 @@ export const CustomerPortal: React.FC = () => {
                 {/* Right: Download WebAPK + Fullscreen Toggle + Heart Icon (Favorites) */}
                 <div className="flex items-center space-x-1.5 shrink-0">
                   <WebApkDownloadButton
-                    appName="foodiplace Customer"
+                    appName="FoodHub Customer"
                     portalType="customer"
                     className="relative shrink-0"
                   />
@@ -3707,7 +3707,7 @@ export const CustomerPortal: React.FC = () => {
           <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 space-y-4 relative">
             <div className="absolute top-3.5 right-3.5 flex items-center space-x-2 z-10">
               <WebApkDownloadButton
-                appName="foodiplace Customer"
+                appName="FoodHub Customer"
                 portalType="customer"
                 className="relative"
               />

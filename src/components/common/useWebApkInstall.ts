@@ -10,7 +10,18 @@ let globalDeferredPrompt: BeforeInstallPromptEvent | null =
   typeof window !== 'undefined' ? (window as any).deferredPwaPrompt || null : null;
 
 if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (e: Event) => {
+    e.preventDefault();
+    globalDeferredPrompt = e as BeforeInstallPromptEvent;
+    (window as any).deferredPwaPrompt = e;
+  });
 
+  window.addEventListener('appinstalled', () => {
+    globalDeferredPrompt = null;
+    if ((window as any).deferredPwaPrompt) {
+      (window as any).deferredPwaPrompt = null;
+    }
+  });
 }
 
 export function useWebApkInstall() {
@@ -43,7 +54,11 @@ export function useWebApkInstall() {
       setIsAndroid(/android/.test(ua));
     }
 
-    const onPromptReady = () => {
+    const syncPrompt = (e?: Event) => {
+      if (e && 'prompt' in e) {
+        globalDeferredPrompt = e as BeforeInstallPromptEvent;
+        (window as any).deferredPwaPrompt = e;
+      }
       const p = (window as any).deferredPwaPrompt || globalDeferredPrompt;
       setDeferredPrompt(p);
     };
@@ -51,18 +66,22 @@ export function useWebApkInstall() {
     const onInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
+      globalDeferredPrompt = null;
+      if (typeof window !== 'undefined') {
+        (window as any).deferredPwaPrompt = null;
+      }
     };
 
-    window.addEventListener('webapk-prompt-ready', onPromptReady);
-    window.addEventListener('webapk-installed', onInstalled);
+    window.addEventListener('beforeinstallprompt', syncPrompt);
+    window.addEventListener('webapk-prompt-ready', syncPrompt);
+    window.addEventListener('appinstalled', onInstalled);
 
-    if ((window as any).deferredPwaPrompt || globalDeferredPrompt) {
-      setDeferredPrompt((window as any).deferredPwaPrompt || globalDeferredPrompt);
-    }
+    syncPrompt();
 
     return () => {
-      window.removeEventListener('webapk-prompt-ready', onPromptReady);
-      window.removeEventListener('webapk-installed', onInstalled);
+      window.removeEventListener('beforeinstallprompt', syncPrompt);
+      window.removeEventListener('webapk-prompt-ready', syncPrompt);
+      window.removeEventListener('appinstalled', onInstalled);
     };
   }, []);
 
@@ -91,12 +110,14 @@ export function useWebApkInstall() {
     }
   }, [deferredPrompt]);
 
+  const currentPrompt = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPwaPrompt : null) || globalDeferredPrompt;
+
   return {
-    isInstallable: Boolean(deferredPrompt || (typeof window !== 'undefined' && (window as any).deferredPwaPrompt) || globalDeferredPrompt),
+    isInstallable: Boolean(currentPrompt),
     isInstalled,
     isIOS,
     isAndroid,
     install,
-    deferredPrompt: deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPwaPrompt : null) || globalDeferredPrompt,
+    deferredPrompt: currentPrompt,
   };
 }

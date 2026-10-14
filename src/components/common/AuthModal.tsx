@@ -270,7 +270,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div className="flex items-center space-x-2">
             {!(typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true)) && (
               <WebApkDownloadButton
-                appName={`foodiplace ${roleTitle}`}
+                appName={`FoodHub ${roleTitle}`}
                 portalType={targetRole}
                 className="relative"
               />
