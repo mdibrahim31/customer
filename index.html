@@ -20,6 +20,25 @@
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <!-- Single Page Apps for GitHub Pages redirect handler -->
+    <script type="text/javascript">
+      (function(l) {
+        if (l.search) {
+          var q = {};
+          l.search.slice(1).split('&').forEach(function(v) {
+            var a = v.split('=');
+            q[a[0]] = a.slice(1).join('=').replace(/~and~/g, '&');
+          });
+          if (q['p'] !== undefined) {
+            window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + (q['p'] || '') +
+              (q['q'] ? ('?' + q['q']) : '') +
+              l.hash
+            );
+          }
+        }
+      }(window.location));
+    </script>
   </head>
   <body class="bg-gray-50 antialiased selection:bg-orange-500 selection:text-white">
     <div id="root"></div>
