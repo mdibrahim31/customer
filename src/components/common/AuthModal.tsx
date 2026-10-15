@@ -18,7 +18,6 @@ import {
   Smartphone,
   RotateCcw
 } from 'lucide-react';
-import { WebApkDownloadButton } from './WebApkDownloadButton';
 
 interface AuthModalProps {
   targetRole: PortalRole;
@@ -268,13 +267,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            {!(typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true)) && (
-              <WebApkDownloadButton
-                appName={`FoodHub ${roleTitle}`}
-                portalType={targetRole}
-                className="relative"
-              />
-            )}
             <button
               onClick={onClose}
               className="p-1.5 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 cursor-pointer"

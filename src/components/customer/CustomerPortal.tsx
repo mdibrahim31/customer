@@ -52,7 +52,6 @@ import {
   EyeOff,
   ShieldCheck
 } from 'lucide-react';
-import { WebApkDownloadButton } from '../common/WebApkDownloadButton';
 
 export const CustomerPortal: React.FC = () => {
   const { 
@@ -912,12 +911,6 @@ export const CustomerPortal: React.FC = () => {
   if (!currentUser || currentUser.role !== 'customer') {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative">
-        {/* WebAPK Download Button in Top-Right */}
-        <WebApkDownloadButton
-          appName="FoodHub Customer"
-          portalType="customer"
-          className="absolute top-4 right-4 z-10"
-        />
         <div className="bg-white w-full max-w-sm rounded-3xl shadow-xl overflow-hidden">
           {/* Header */}
           <div className="bg-orange-600 p-8 text-white text-center">
@@ -1709,11 +1702,6 @@ export const CustomerPortal: React.FC = () => {
             <div className="sticky top-0 bg-white/95 backdrop-blur-md z-30 px-5 pt-4 pb-3 flex items-center justify-between border-b border-slate-100">
               <h1 className="text-2xl font-black text-slate-900 tracking-tight">Account</h1>
               <div className="flex items-center space-x-2">
-                <WebApkDownloadButton
-                  appName="FoodHub Customer"
-                  portalType="customer"
-                  className="relative shrink-0"
-                />
                 <button 
                   onClick={openSettingsModal}
                   className="p-1 text-slate-800 hover:text-orange-600 transition cursor-pointer"
@@ -1728,13 +1716,7 @@ export const CustomerPortal: React.FC = () => {
               {/* User Profile or Login Card */}
               {!currentUser || currentUser.role !== 'customer' ? (
                 <div className="bg-gradient-to-br from-orange-50 via-white to-amber-50 rounded-3xl p-6 border border-orange-200/90 shadow-lg relative space-y-4">
-                  {/* WebAPK Download Button in Top-Right of Customer Login Card */}
-                  <WebApkDownloadButton
-                    appName="FoodHub Customer"
-                    portalType="customer"
-                    className="absolute top-4 right-4 z-10"
-                  />
-                  <div className="space-y-1 pr-14">
+                  <div className="space-y-1">
                     <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center shadow-xs">
                       <User className="w-6 h-6 stroke-[2.2]" />
                     </div>
@@ -2177,11 +2159,6 @@ export const CustomerPortal: React.FC = () => {
 
                 {/* Right: Download WebAPK + Fullscreen Toggle + Heart Icon (Favorites) */}
                 <div className="flex items-center space-x-1.5 shrink-0">
-                  <WebApkDownloadButton
-                    appName="FoodHub Customer"
-                    portalType="customer"
-                    className="relative shrink-0"
-                  />
                   <button 
                     onClick={toggleFullscreen}
                     className="p-1.5 text-white/90 hover:text-white hover:bg-white/10 rounded-full transition cursor-pointer active:scale-95"
@@ -3706,11 +3683,6 @@ export const CustomerPortal: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 space-y-4 relative">
             <div className="absolute top-3.5 right-3.5 flex items-center space-x-2 z-10">
-              <WebApkDownloadButton
-                appName="FoodHub Customer"
-                portalType="customer"
-                className="relative"
-              />
               <button 
                 onClick={() => setIsCustomerLoginModalOpen(false)}
                 className="p-1.5 text-slate-400 hover:text-slate-700 rounded-full bg-slate-100 cursor-pointer"

@@ -10,37 +10,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="FoodHub Customer" />
-    <link rel="manifest" href="./manifest.json" />
-    <!-- Early PWA / WebAPK Setup & Service Worker Registration -->
-    <script type="text/javascript">
-      window.deferredPwaPrompt = null;
-      window.addEventListener('beforeinstallprompt', function(e) {
-        e.preventDefault();
-        window.deferredPwaPrompt = e;
-        window.dispatchEvent(new CustomEvent('pwa-prompt-ready'));
-      });
-      window.addEventListener('appinstalled', function() {
-        window.deferredPwaPrompt = null;
-        window.dispatchEvent(new CustomEvent('pwa-installed'));
-      });
-
-      if ('serviceWorker' in navigator) {
-        var registerSW = function() {
-          navigator.serviceWorker.register('./sw.js', { scope: './' })
-            .then(function(reg) {
-              console.log('✅ Service worker registered:', reg.scope);
-            })
-            .catch(function(err) {
-              console.warn('SW register notice:', err);
-            });
-        };
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-          registerSW();
-        } else {
-          window.addEventListener('DOMContentLoaded', registerSW);
-        }
-      }
-    </script>
     <link rel="apple-touch-icon" href="./icons/icon-customer-192.png" />
     <link rel="icon" type="image/png" href="./icons/icon-customer-192.png" />
     <title>foodiplace - Food Delivery System</title>
